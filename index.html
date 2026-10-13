@@ -13,7 +13,7 @@
             padding: 15px;
         }
         .container {
-            max-width: 550px;
+            max-width: 600px;
             margin: 10px auto;
             background: #1e293b;
             padding: 20px;
@@ -42,7 +42,9 @@
         button:hover { background-color: #16a34a; }
         .btn-google { background-color: #ea4335; }
         .btn-google:hover { background-color: #d33828; }
-        
+        .btn-secondary { background-color: #0284c7; }
+        .btn-secondary:hover { background-color: #0369a1; }
+
         /* Navbar Menu Tab */
         .navbar {
             display: flex;
@@ -81,20 +83,19 @@
         }
         label { display: block; font-size: 14px; color: #94a3b8; margin-top: 5px; }
         
-        /* Lapangan Taktik Rapi & Proporsional */
+        /* Lapangan Taktik */
         .pitch {
             background: linear-gradient(to bottom, #166534, #15803d);
             border: 2px solid #22c55e;
             border-radius: 10px;
-            height: 340px;
+            height: 320px;
             position: relative;
             margin-top: 10px;
-            padding: 15px 10px;
+            padding: 12px 10px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
         }
         .pitch-line-center {
             position: absolute;
@@ -113,36 +114,30 @@
         .player-slot {
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid #38bdf8;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 6px;
-            font-size: 11px;
+            font-size: 10px;
             text-align: center;
-            cursor: pointer;
-            min-width: 65px;
-            transition: 0.2s;
-        }
-        .player-slot:hover {
-            background: #0284c7;
-            transform: scale(1.05);
+            min-width: 60px;
         }
 
         .match-log {
             background: #0f172a;
             padding: 10px;
             border-radius: 6px;
-            height: 90px;
+            height: 140px;
             overflow-y: auto;
             font-family: monospace;
             font-size: 12px;
             color: #38bdf8;
         }
-        .squad-table {
+        .squad-table, .transfer-table, .academy-table {
             width: 100%;
             font-size: 12px;
             border-collapse: collapse;
         }
-        .squad-table th, .squad-table td {
-            padding: 7px;
+        .squad-table th, .squad-table td, .transfer-table th, .transfer-table td, .academy-table th, .academy-table td {
+            padding: 6px;
             border-bottom: 1px solid #475569;
             text-align: left;
         }
@@ -153,7 +148,7 @@
     <!-- SCREEN 1: LOGIN -->
     <div class="container" id="login-screen">
         <h1>⚽ Football Manager</h1>
-        <p style="text-align: center;">Kelola klub, atur formasi lapangan, & transfer pemain!</p>
+        <p style="text-align: center;">Karier Manajer Profesional & Akademi Remaja</p>
         <div style="margin: 20px 0;" id="google-btn-container">
             <button class="btn-google" onclick="loginGoogle()">Gunakan Akun Google untuk Masuk</button>
         </div>
@@ -189,43 +184,38 @@
         <!-- TAB 1: BERANDA -->
         <div id="tab-beranda" class="tab-content">
             <div class="card">
-                <h2>📅 Jadwal & Tanggal Klub</h2>
-                <p>Tanggal Game: <strong id="game-date" style="color: #38bdf8;">14 Oktober 2026</strong></p>
+                <h2>📅 Jadwal Pertandingan</h2>
+                <p>Tanggal: <strong style="color: #38bdf8;">14 Oktober 2026</strong></p>
                 <p>Lawan Berikutnya: <strong id="rival-name">-</strong></p>
                 <button onclick="tambahToken()">Klaim Token Harian (+5)</button>
             </div>
             <div class="card">
-                <h2>🏆 Menu Pertandingan</h2>
-                <button onclick="mulaiPertandingan()">Mainkan Pertandingan</button>
+                <h2>🏆 Live Match Center</h2>
+                <button id="btn-match" onclick="mulaiPertandinganLive()">Mulai Pertandingan (Live Commentary)</button>
             </div>
             <div class="card">
-                <h2>📢 Live Commentary / Hasil</h2>
-                <div class="match-log" id="match-log">Belum ada pertandingan hari ini.</div>
+                <h2>📢 Komentator Pertandingan</h2>
+                <div class="match-log" id="match-log">Pertandingan belum dimulai. Siapkan taktik terbaikmu!</div>
             </div>
         </div>
 
         <!-- TAB 2: TAKTIK & SKUAD -->
         <div id="tab-taktik" class="tab-content" style="display: none;">
             <div class="card">
-                <h2>⚙️ Atur Formasi & Posisi Lapangan</h2>
-                <label>Pilih Formasi:</label>
-                <select id="tactic-formation" onchange="ubahFormasi()">
+                <h2>⚙️ Atur Formasi & Posisi</h2>
+                <label>Formasi:</label>
+                <select id="tactic-formation" onchange="renderPitch()">
                     <option value="4-3-3">4-3-3 (Menyerang)</option>
                     <option value="4-4-2">4-4-2 (Seimbang)</option>
                     <option value="3-5-2">3-5-2 (Penguasaan Bola)</option>
                 </select>
-                <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 5px 0;">Klik kotak pemain di lapangan untuk mengganti posisinya dari daftar skuad!</p>
-                
-                <!-- Lapangan Hijau Proporsional -->
                 <div class="pitch" id="pitch-container">
                     <div class="pitch-line-center"></div>
-                    <!-- Baris diisi dinamis via JavaScript -->
                 </div>
             </div>
-            
             <div class="card">
-                <h2>👥 Daftar Skuad Lengkap</h2>
-                <div style="max-height: 160px; overflow-y: auto;">
+                <h2>👥 Daftar Skuad Cadangan & Rotasi</h2>
+                <div style="max-height: 150px; overflow-y: auto;">
                     <table class="squad-table" id="squad-table">
                         <tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Aksi</th></tr>
                     </table>
@@ -237,24 +227,25 @@
         <div id="tab-transfer" class="tab-content" style="display: none;">
             <div class="card">
                 <h2>🛒 Bursa Transfer Bintang</h2>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-                    <span>⭐ Marco (ST - Rat: 82)</span>
-                    <button style="width: auto; padding: 5px 10px;" onclick="beliPemain('Marco', 82, 'ST', 30)">Beli (30 🪙)</button>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 8px; border-radius: 6px; font-size: 13px;">
-                    <span>⭐ Silva (CM - Rat: 80)</span>
-                    <button style="width: auto; padding: 5px 10px;" onclick="beliPemain('Silva', 80, 'CM', 25)">Beli (25 🪙)</button>
+                <div style="max-height: 180px; overflow-y: auto;">
+                    <table class="transfer-table" id="transfer-table">
+                        <tr><th>Pemain</th><th>Pos</th><th>Rat</th><th>Harga</th><th>Aksi</th></tr>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 4: AKADEMI REMAJA -->
+        <!-- TAB 4: AKADEMI REMAJA & TRAINING -->
         <div id="tab-akademi" class="tab-content" style="display: none;">
             <div class="card">
-                <h2>🎓 Akademi Remaja (Youth Academy)</h2>
-                <p style="font-size: 13px; color: #94a3b8;">Rekrut talenta muda potensial untuk masa depan klubmu!</p>
-                <button onclick="cariTalentaMuda()">Cari Talenta Muda (Biaya: 10 🪙)</button>
-                <div id="academy-result" style="margin-top: 10px;"></div>
+                <h2>🎓 Akademi Remaja & Training</h2>
+                <p style="font-size: 12px; color: #94a3b8;">Rekrut pemuda, lalu latih kemampuannya sebelum masuk skuad utama!</p>
+                <button class="btn-secondary" onclick="rekrutAkademi()">Rekrut Remaja Baru (Biaya: 5 🪙)</button>
+                <div style="max-height: 160px; overflow-y: auto; margin-top: 10px;">
+                    <table class="academy-table" id="academy-table">
+                        <tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Status Latihan</th><th>Aksi</th></tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -278,9 +269,14 @@
             squad: [
                 { nama: "Kurnia", pos: "GK", rating: 75 },
                 { nama: "Robbi", pos: "CB", rating: 77 },
-                { nama: "Ahmad", pos: "CM", rating: 78 },
-                { nama: "Eka", pos: "ST", rating: 80 }
-            ]
+                { nama: "Ahmad", pos: "CM", rating: 78 }
+            ],
+            transferMarket: [
+                { id: 1, nama: "Marco", pos: "ST", rating: 82, harga: 30, dibeli: false },
+                { id: 2, nama: "Silva", pos: "CM", rating: 80, harga: 25, dibeli: false },
+                { id: 3, nama: "Hazard", pos: "LW", rating: 81, harga: 28, dibeli: false }
+            ],
+            academy: []
         };
         let currentRival = "";
         const poolRival = ["Bintang FC", "Rajawali City", "Garuda Perkasa", "Borneo Wanderers", "Sunda Raya", "Andalas FC"];
@@ -309,6 +305,8 @@
             updateUI();
             renderSquadTable();
             renderPitch();
+            renderTransferTable();
+            renderAcademyTable();
 
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("game-screen").style.display = "block";
@@ -332,103 +330,159 @@
             let pitch = document.getElementById("pitch-container");
             let f = document.getElementById("tactic-formation").value;
             
-            // Susunan barisan lapangan yang proporsional (Dari Penyerang di atas ke Kiper di bawah)
             if (f === '4-3-3') {
                 pitch.innerHTML = `
                     <div class="pitch-line-center"></div>
-                    <div class="pitch-row"><div class="player-slot" onclick="gantiPemainPosisi(10)"><b>ST</b><br>${saveData.lineup[10].nama}</div></div>
+                    <div class="pitch-row"><div class="player-slot"><b>ST</b><br>${saveData.lineup[10].nama}</div></div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(8)"><b>LW</b><br>${saveData.lineup[8].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(7)"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(9)"><b>RW</b><br>${saveData.lineup[9].nama}</div>
+                        <div class="player-slot"><b>LW</b><br>${saveData.lineup[8].nama}</div>
+                        <div class="player-slot"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
+                        <div class="player-slot"><b>RW</b><br>${saveData.lineup[9].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(5)"><b>CM</b><br>${saveData.lineup[5].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(6)"><b>CM</b><br>${saveData.lineup[6].nama}</div>
+                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[5].nama}</div>
+                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[6].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(1)"><b>LB</b><br>${saveData.lineup[1].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(2)"><b>CB</b><br>${saveData.lineup[2].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(3)"><b>CB</b><br>${saveData.lineup[3].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(4)"><b>RB</b><br>${saveData.lineup[4].nama}</div>
+                        <div class="player-slot"><b>LB</b><br>${saveData.lineup[1].nama}</div>
+                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[2].nama}</div>
+                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[3].nama}</div>
+                        <div class="player-slot"><b>RB</b><br>${saveData.lineup[4].nama}</div>
                     </div>
-                    <div class="pitch-row"><div class="player-slot" onclick="gantiPemainPosisi(0)"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
+                    <div class="pitch-row"><div class="player-slot"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
             } else if (f === '4-4-2') {
                 pitch.innerHTML = `
                     <div class="pitch-line-center"></div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(9)"><b>ST</b><br>${saveData.lineup[9].nama}</div>
-                        <div class="pitch-row"><div class="player-slot" onclick="gantiPemainPosisi(10)"><b>ST</b><br>${saveData.lineup[10].nama}</div></div>
+                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[9].nama}</div>
+                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[10].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(5)"><b>LM</b><br>${saveData.lineup[5].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(6)"><b>CM</b><br>${saveData.lineup[6].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(7)"><b>CM</b><br>${saveData.lineup[7].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(8)"><b>RM</b><br>${saveData.lineup[8].nama}</div>
+                        <div class="player-slot"><b>LM</b><br>${saveData.lineup[5].nama}</div>
+                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[6].nama}</div>
+                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[7].nama}</div>
+                        <div class="player-slot"><b>RM</b><br>${saveData.lineup[8].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(1)"><b>LB</b><br>${saveData.lineup[1].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(2)"><b>CB</b><br>${saveData.lineup[2].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(3)"><b>CB</b><br>${saveData.lineup[3].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(4)"><b>RB</b><br>${saveData.lineup[4].nama}</div>
+                        <div class="player-slot"><b>LB</b><br>${saveData.lineup[1].nama}</div>
+                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[2].nama}</div>
+                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[3].nama}</div>
+                        <div class="player-slot"><b>RB</b><br>${saveData.lineup[4].nama}</div>
                     </div>
-                    <div class="pitch-row"><div class="player-slot" onclick="gantiPemainPosisi(0)"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
+                    <div class="pitch-row"><div class="player-slot"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
             } else { // 3-5-2
                 pitch.innerHTML = `
                     <div class="pitch-line-center"></div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(9)"><b>ST</b><br>${saveData.lineup[9].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(10)"><b>ST</b><br>${saveData.lineup[10].nama}</div>
+                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[9].nama}</div>
+                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[10].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(5)"><b>LWB</b><br>${saveData.lineup[5].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(6)"><b>CM</b><br>${saveData.lineup[6].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(7)"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(8)"><b>RWB</b><br>${saveData.lineup[8].nama}</div>
+                        <div class="player-slot"><b>LWB</b><br>${saveData.lineup[5].nama}</div>
+                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[6].nama}</div>
+                        <div class="player-slot"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
+                        <div class="player-slot"><b>RWB</b><br>${saveData.lineup[8].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot" onclick="gantiPemainPosisi(1)"><b>CB</b><br>${saveData.lineup[1].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(2)"><b>CB</b><br>${saveData.lineup[2].nama}</div>
-                        <div class="player-slot" onclick="gantiPemainPosisi(3)"><b>CB</b><br>${saveData.lineup[3].nama}</div>
+                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[1].nama}</div>
+                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[2].nama}</div>
+                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[3].nama}</div>
                     </div>
-                    <div class="pitch-row"><div class="player-slot" onclick="gantiPemainPosisi(0)"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
+                    <div class="pitch-row"><div class="player-slot"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
             }
-        }
-
-        function ubahFormasi() {
-            renderPitch();
         }
 
         function renderSquadTable() {
             let table = document.getElementById("squad-table");
-            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Cadangan</th></tr>`;
+            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Aksi</th></tr>`;
             saveData.squad.forEach((p, idx) => {
                 let tr = document.createElement("tr");
-                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td style="color:#38bdf8;">${p.rating}</td><td><button style="padding:3px 6px; font-size:11px;" onclick="promosiKeUtama(${idx})">Pakai</button></td>`;
+                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td><button style="padding:3px 6px; font-size:11px;" onclick="tukarKeInti(${idx})">Mainkan</button></td>`;
                 table.appendChild(tr);
             });
         }
 
-        function gantiPemainPosisi(lineupIndex) {
-            let namaBaru = prompt("Masukkan nama pemain pengganti dari cadangan atau ketik nama baru:");
-            if(namaBaru) {
-                saveData.lineup[lineupIndex].nama = namaBaru;
+        function renderTransferTable() {
+            let table = document.getElementById("transfer-table");
+            table.innerHTML = `<tr><th>Pemain</th><th>Pos</th><th>Rat</th><th>Harga</th><th>Aksi</th></tr>`;
+            saveData.transferMarket.forEach((p) => {
+                let tr = document.createElement("tr");
+                if (!p.dibeli) {
+                    tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td>${p.harga} 🪙</td><td><button style="padding:3px 6px; font-size:11px;" onclick="beliPemain(${p.id})">Beli</button></td>`;
+                } else {
+                    tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td>Terjual</td><td><span style="color:#22c55e; font-size:11px;">Milik Anda</span></td>`;
+                }
+                table.appendChild(tr);
+            });
+        }
+
+        function renderAcademyTable() {
+            let table = document.getElementById("academy-table");
+            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Status Latihan</th><th>Aksi</th></tr>`;
+            saveData.academy.forEach((p, idx) => {
+                let tr = document.createElement("tr");
+                let statusText = p.dilatih ? "✅ Siap Promosi" : "⏳ Sedang Dilatih";
+                let actionBtn = p.dilatih ? `<button style="padding:3px 6px; font-size:11px; background:#22c55e;" onclick="promosiAkademi(${idx})">Promosi</button>` : `<button style="padding:3px 6px; font-size:11px; background:#0284c7;" onclick="latihAkademi(${idx})">Latih</button>`;
+                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td>${statusText}</td><td>${actionBtn}</td>`;
+                table.appendChild(tr);
+            });
+        }
+
+        function tukarKeInti(squadIdx) {
+            let slot = prompt("Masukkan nomor urut posisi lineup inti yang ingin diganti (0 s.d 10):", "0");
+            let sIdx = parseInt(slot);
+            if(!isNaN(sIdx) && sIdx >= 0 && sIdx < 11) {
+                let temp = saveData.lineup[sIdx];
+                saveData.lineup[sIdx] = saveData.squadsquadIdx || saveData.squad[squadIdx];
+                saveData.squad[squadIdx] = temp;
                 renderPitch();
+                renderSquadTable();
+                alert("Rotasi pemain berhasil!");
             }
         }
 
-        function promosiKeUtama(squadIndex) {
-            let p = saveData.squad[squadIndex];
-            let targetSlot = prompt("Masukkan nomor urut posisi di lapangan (0 untuk GK sampai 10 untuk Penyerang):", "0");
-            let idx = parseInt(targetSlot);
-            if(!isNaN(idx) && idx >= 0 && idx < 11) {
-                let temp = saveData.lineup[idx];
-                saveData.lineup[idx] = { pos: p.pos, nama: p.nama, rating: p.rating };
-                saveData.squad[squadIndex] = { pos: temp.pos, nama: temp.nama, rating: temp.rating };
-                renderPitch();
+        function beliPemain(id) {
+            let p = saveData.transferMarket.find(item => item.id === id);
+            if(saveData.token >= p.harga) {
+                saveData.token -= p.harga;
+                p.dibeli = true;
+                saveData.squad.push({ nama: p.nama, pos: p.pos, rating: p.rating });
+                updateUI();
+                renderTransferTable();
                 renderSquadTable();
-                alert("Berhasil merotasi posisi pemain!");
+                alert("Sukses merekrut " + p.nama + " ke skuad cadangan!");
+            } else {
+                alert("Token tidak cukup!");
             }
+        }
+
+        function rekrutAkademi() {
+            if(saveData.token >= 5) {
+                saveData.token -= 5;
+                let namaMuda = ["Fajar", "Yoga", "Dimas", "Rian", "Ilham"][Math.floor(Math.random()*5)];
+                saveData.academy.push({ nama: namaMuda, pos: "CM", rating: 70, dilatih: false });
+                updateUI();
+                renderAcademyTable();
+                alert("Remaja akademi berhasil direkrut. Silakan jalankan program latihan!");
+            } else {
+                alert("Token butuh 5 untuk merekrut akademi!");
+            }
+        }
+
+        function latihAkademi(idx) {
+            saveData.academy[idx].dilatih = true;
+            saveData.academy[idx].rating += 5; // Naik rating setelah dilatih
+            renderAcademyTable();
+            alert(saveData.academy[idx].nama + " telah selesai latihan! Rating meningkat menjadi " + saveData.academy[idx].rating + ".");
+        }
+
+        function promosiAkademi(idx) {
+            let p = saveData.academy[idx];
+            saveData.squad.push({ nama: p.nama, pos: p.pos, rating: p.rating });
+            saveData.academy.splice(idx, 1);
+            renderAcademyTable();
+            renderSquadTable();
+            alert(p.nama + " resmi dipromosikan ke skuad utama!");
         }
 
         function pilihRivalBaru() {
@@ -442,55 +496,48 @@
             alert("Berhasil klaim 5 token gratis!");
         }
 
-        function beliPemain(nama, rating, pos, harga) {
-            if(saveData.token >= harga) {
-                saveData.token -= harga;
-                saveData.squad.push({ nama: nama, pos: pos, rating: rating });
-                updateUI();
-                renderSquadTable();
-                alert("Sukses merekrut " + nama + " ke daftar cadangan!");
-            } else {
-                alert("Token tidak cukup!");
-            }
-        }
-
-        function cariTalentaMuda() {
-            if(saveData.token >= 10) {
-                saveData.token -= 10;
-                let namaMuda = ["Fajar", "Yoga", "Dimas", "Rian"][Math.floor(Math.random()*4)];
-                let ratMuda = Math.floor(Math.random() * 6) + 72;
-                saveData.squad.push({ nama: namaMuda, pos: "CM", rating: ratMuda });
-                updateUI();
-                renderSquadTable();
-                document.getElementById("academy-result").innerHTML = `<p style="color: #22c55e;">Talenta akademi didapat: <strong>${namaMuda} (Rat: ${ratMuda})</strong> masuk cadangan!</p>`;
-            } else {
-                alert("Butuh 10 token untuk memantau akademi!");
-            }
-        }
-
-        function mulaiPertandingan() {
+        function mulaiPertandinganLive() {
+            let btn = document.getElementById("btn-match");
+            btn.disabled = true;
             let logEl = document.getElementById("match-log");
-            logEl.innerHTML = "Pertandingan melawan " + currentRival + " dimulai...\n";
+            logEl.innerHTML = "⚽ Kick-off babak pertama dimulai: " + saveData.club + " vs " + currentRival + "!\n";
 
             let totalRating = saveData.lineup.reduce((sum, p) => sum + p.rating, 0);
             let avgRating = totalRating / 11;
+            let skorUser = 0;
+            let skorRival = 0;
 
-            let skorUser = Math.floor(Math.random() * 3) + (avgRating > 83 ? 1 : 0);
-            let skorRival = Math.floor(Math.random() * 3);
-
-            setTimeout(() => {
-                logEl.innerHTML += "Hasil Akhir: " + saveData.club + " " + skorUser + " - " + skorRival + " " + currentRival + "\n";
-                if(skorUser > skorRival) {
-                    logEl.innerHTML += "🎉 Menang! +10 Token.";
-                    saveData.token += 10;
-                } else if(skorUser === skorRival) {
-                    logEl.innerHTML += "🤝 Imbang. +5 Token.";
-                    saveData.token += 5;
+            let menit = 0;
+            let interval = setInterval(() => {
+                menit += 15;
+                if(menit <= 90) {
+                    let eventRand = Math.random();
+                    if(eventRand > 0.5 && avgRating >= 80) {
+                        skorUser++;
+                        logEl.innerHTML += `⏱️ Menit ${menit}': GOOOAL! ${saveData.club} mencetak angka!\n`;
+                    } else if(eventRand < 0.3) {
+                        skorRival++;
+                        logEl.innerHTML += `⏱️ Menit ${menit}': Berbahaya! ${currentRival} menjebol gawang!\n`;
+                    } else {
+                        logEl.innerHTML += `⏱️ Menit ${menit}': Jual beli serangan sengit di lini tengah.\n`;
+                    }
+                    logEl.scrollTop = logEl.scrollHeight;
                 } else {
-                    logEl.innerHTML += "❌ Kalah. Perbaiki taktik & rotasi pemain!";
+                    clearInterval(interval);
+                    logEl.innerHTML += `\n🏁 Peluit panjang berbunyi! Skor Akhir: ${saveData.club} ${skorUser} - ${skorRival} ${currentRival}\n`;
+                    if(skorUser > skorRival) {
+                        logEl.innerHTML += "🎉 Luar Biasa! Tim Kamu Menang (+10 Token).";
+                        saveData.token += 10;
+                    } else if(skorUser === skorRival) {
+                        logEl.innerHTML += "🤝 Pertandingan Imbang (+5 Token).";
+                        saveData.token += 5;
+                    } else {
+                        logEl.innerHTML += "❌ Kekalahan pahit. Evaluasi taktik & latihan pemainmu!";
+                    }
+                    updateUI();
+                    pilihRivalBaru();
+                    btn.disabled = false;
                 }
-                updateUI();
-                pilihRivalBaru();
             }, 800);
         }
     </script>
