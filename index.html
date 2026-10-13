@@ -13,7 +13,7 @@
             padding: 15px;
         }
         .container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 20px auto;
             background: #1e293b;
             padding: 20px;
@@ -54,25 +54,53 @@
             box-sizing: border-box;
         }
         label { display: block; font-size: 14px; color: #94a3b8; margin-top: 5px; }
+        
+        /* Lapangan Taktik */
+        .pitch {
+            background: #15803d;
+            border: 2px solid #22c55e;
+            border-radius: 8px;
+            height: 250px;
+            position: relative;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+        }
+        .pitch-row {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        .player-node {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid #38bdf8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-align: center;
+        }
         .match-log {
             background: #0f172a;
             padding: 10px;
             border-radius: 6px;
-            height: 110px;
+            height: 100px;
             overflow-y: auto;
             font-family: monospace;
             font-size: 13px;
             color: #38bdf8;
         }
-        .transfer-item, .player-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1e293b;
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            font-size: 14px;
+        .squad-table {
+            width: 100%;
+            font-size: 13px;
+            border-collapse: collapse;
+        }
+        .squad-table th, .squad-table td {
+            padding: 6px;
+            border-bottom: 1px solid #475569;
+            text-align: left;
         }
     </style>
 </head>
@@ -81,7 +109,7 @@
     <!-- SCREEN 1: LOGIN -->
     <div class="container" id="login-screen">
         <h1>⚽ Football Manager</h1>
-        <p style="text-align: center;">Kelola klub impianmu dan taklukkan kompetisi!</p>
+        <p style="text-align: center;">Kelola 11 pemain inti & taktik timu!</p>
         <div style="margin: 20px 0;" id="google-btn-container">
             <button class="btn-google" onclick="loginGoogle()">Gunakan Akun Google untuk Masuk</button>
         </div>
@@ -101,39 +129,43 @@
     <div class="container" id="game-screen" style="display: none;">
         <h1 id="display-club">Klub: -</h1>
         <div class="card">
-            <p>Manajer: <span id="display-manager">-</span></p>
-            <p>Token: <span id="display-token">100</span> 🪙 | Kas: Rp <span id="display-money">50.000.000</span></p>
+            <p>Manajer: <span id="display-manager">-</span> | Token: <span id="display-token">100</span> 🪙</p>
             <button onclick="tambahToken()">Klaim Token Harian (+5)</button>
         </div>
 
         <div class="card">
-            <h2>👥 Skuad Pemain & Rating</h2>
-            <div id="squad-list">
-                <!-- Daftar pemain tim sendiri akan dimuat di sini -->
+            <h2>🏟️ Papan Taktik Lapangan (4-3-3)</h2>
+            <div class="pitch">
+                <div class="pitch-row">
+                    <div class="player-node">ST: R. Lewandowski (85)</div>
+                </div>
+                <div class="pitch-row">
+                    <div class="player-node">LW: L. Sané (82)</div>
+                    <div class="player-node">CAM: K. De Bruyne (88)</div>
+                    <div class="player-node">RW: M. Salah (86)</div>
+                </div>
+                <div class="pitch-row">
+                    <div class="player-node">CM: J. Kimmich (84)</div>
+                    <div class="player-node">CM: Pedri (83)</div>
+                </div>
+                <div class="pitch-row">
+                    <div class="player-node">LB: A. Davies (81)</div>
+                    <div class="player-node">CB: V. van Dijk (87)</div>
+                    <div class="player-node">CB: R. Dias (85)</div>
+                    <div class="player-node">RB: T. Alexander-Arnold (82)</div>
+                </div>
+                <div class="pitch-row">
+                    <div class="player-node">GK: M. Neuer (86)</div>
+                </div>
             </div>
         </div>
 
         <div class="card">
-            <h2>⚙️ Pengaturan Taktik & Keuangan</h2>
-            <label>Formasi Tim:</label>
-            <select id="tactic-formation">
-                <option value="4-3-3">4-3-3 (Menyerang)</option>
-                <option value="4-4-2">4-4-2 (Seimbang)</option>
-                <option value="3-5-2">3-5-2 (Penguasaan Bola)</option>
-            </select>
-            <label>Harga Tiket Stadion:</label>
-            <input type="number" id="ticket-price" value="50000" min="10000" step="5000">
-        </div>
-
-        <div class="card">
-            <h2>🛒 Bursa Transfer Pemain</h2>
-            <div class="transfer-item">
-                <span>⭐ Marco (Rating 82 - ST)</span>
-                <button style="width: auto; padding: 6px 12px;" onclick="beliPemain('Marco', 82, 'ST', 30)">Beli (30 🪙)</button>
-            </div>
-            <div class="transfer-item">
-                <span>⭐ Silva (Rating 80 - MID)</span>
-                <button style="width: auto; padding: 6px 12px;" onclick="beliPemain('Silva', 80, 'MID', 25)">Beli (25 🪙)</button>
+            <h2>👥 Daftar Skuad Lengkap (11 Inti + Cadangan)</h2>
+            <div style="max-height: 150px; overflow-y: auto;">
+                <table class="squad-table" id="squad-table">
+                    <tr><th>Nama</th><th>Pos Utama</th><th>Multi-Posisi</th><th>Rating</th></tr>
+                </table>
             </div>
         </div>
 
@@ -153,16 +185,24 @@
 
     <script>
         let saveData = { 
-            email: "", 
-            manager: "", 
-            club: "", 
-            token: 100, 
-            money: 50000000,
+            email: "", manager: "", club: "", token: 100,
             squad: [
-                { nama: "Kurnia", posisi: "GK", rating: 75 },
-                { nama: "Robbi", posisi: "DEF", rating: 77 },
-                { nama: "Ahmad", posisi: "MID", rating: 78 },
-                { nama: "Eka", posisi: "ATT", rating: 80 }
+                { nama: "M. Neuer", pos: "GK", multi: "GK", rating: 86 },
+                { nama: "A. Davies", pos: "LB", multi: "LWB, LM", rating: 81 },
+                { nama: "V. van Dijk", pos: "CB", multi: "CDM", rating: 87 },
+                { nama: "R. Dias", pos: "CB", multi: "CDM", rating: 85 },
+                { nama: "T. Alexander-Arnold", pos: "RB", multi: "RWB, CM", rating: 82 },
+                { nama: "J. Kimmich", pos: "CM", multi: "CDM, RB", rating: 84 },
+                { nama: "Pedri", pos: "CM", multi: "CAM, LM", rating: 83 },
+                { nama: "K. De Bruyne", pos: "CAM", multi: "CM, ST", rating: 88 },
+                { nama: "L. Sané", pos: "LW", multi: "RW, LM", rating: 82 },
+                { nama: "M. Salah", pos: "RW", multi: "ST, RM", rating: 86 },
+                { nama: "R. Lewandowski", pos: "ST", multi: "CF", rating: 85 },
+                // Pemain Cadangan
+                { nama: "Kurnia (Cadangan)", pos: "GK", multi: "GK", rating: 75 },
+                { nama: "Robbi (Cadangan)", pos: "CB", multi: "RB", rating: 77 },
+                { nama: "Ahmad (Cadangan)", pos: "CM", multi: "CAM", rating: 78 },
+                { nama: "Eka (Cadangan)", pos: "ST", multi: "LW, RW", rating: 80 }
             ]
         };
         let currentRival = "";
@@ -190,7 +230,7 @@
             document.getElementById("display-club").innerText = "Klub: " + saveData.club;
             
             updateUI();
-            renderSquad();
+            renderSquadTable();
 
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("game-screen").style.display = "block";
@@ -200,17 +240,15 @@
 
         function updateUI() {
             document.getElementById("display-token").innerText = saveData.token;
-            document.getElementById("display-money").innerText = saveData.money.toLocaleString('id-ID');
         }
 
-        function renderSquad() {
-            let squadEl = document.getElementById("squad-list");
-            squadEl.innerHTML = "";
+        function renderSquadTable() {
+            let table = document.getElementById("squad-table");
+            table.innerHTML = `<tr><th>Nama</th><th>Pos Utama</th><th>Multi-Posisi</th><th>Rating</th></tr>`;
             saveData.squad.forEach(p => {
-                let div = document.createElement("div");
-                div.className = "player-item";
-                div.innerHTML = `<span>👤 <strong>${p.nama}</strong> (${p.posisi})</span> <span style="color: #38bdf8;">Rating: ${p.rating}</span>`;
-                squadEl.appendChild(div);
+                let tr = document.createElement("tr");
+                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.multi}</td><td style="color:#38bdf8;">${p.rating}</td>`;
+                table.appendChild(tr);
             });
         }
 
@@ -225,46 +263,26 @@
             alert("Berhasil klaim 5 token gratis!");
         }
 
-        function beliPemain(namaPemain, ratingPemain, posisiPemain, hargaToken) {
-            if(saveData.token >= hargaToken) {
-                saveData.token -= hargaToken;
-                saveData.squad.push({ nama: namaPemain, posisi: posisiPemain, rating: ratingPemain });
-                updateUI();
-                renderSquad();
-                alert("Sukses merekrut " + namaPemain + " ke dalam skuad " + saveData.club + "!");
-            } else {
-                alert("Token tidak cukup! Silakan kumpulkan token terlebih dahulu.");
-            }
-        }
-
         function mulaiPertandingan() {
-            let formasi = document.getElementById("tactic-formation").value;
-            let hargaTiket = parseInt(document.getElementById("ticket-price").value) || 50000;
-            let pendapatanTiket = hargaTiket * 1000;
-
-            saveData.money += pendapatanTiket;
-
-            // Hitung rata-rata rating skuad untuk mempengaruhi hasil pertandingan
-            let totalRating = saveData.squad.reduce((sum, p) => sum + p.rating, 0);
-            let avgRating = totalRating / saveData.squad.length;
-
             let logEl = document.getElementById("match-log");
-            logEl.innerHTML = "Pertandingan dimulai: " + saveData.club + " vs " + currentRival + " (" + formasi + ")...\n";
+            logEl.innerHTML = "Pertandingan dimulai: " + saveData.club + " vs " + currentRival + "...\n";
 
-            let skorUser = Math.floor(Math.random() * 3) + (avgRating > 78 ? 1 : 0);
+            let totalRating = saveData.squad.slice(0, 11).reduce((sum, p) => sum + p.rating, 0);
+            let avgRating = totalRating / 11;
+
+            let skorUser = Math.floor(Math.random() * 3) + (avgRating > 83 ? 1 : 0);
             let skorRival = Math.floor(Math.random() * 3);
 
             setTimeout(() => {
-                logEl.innerHTML += "Pendapatan Tiket: Rp " + pendapatanTiket.toLocaleString('id-ID') + "\n";
                 logEl.innerHTML += "Skor Akhir: " + saveData.club + " " + skorUser + " - " + skorRival + " " + currentRival + "\n";
                 if(skorUser > skorRival) {
                     logEl.innerHTML += "🎉 Menang! Bonus +10 Token.";
                     saveData.token += 10;
                 } else if(skorUser === skorRival) {
-                    logEl.innerHTML += "🤝 Hasil imbang. Bonus +5 Token.";
+                    logEl.innerHTML += "🤝 Imbang. Bonus +5 Token.";
                     saveData.token += 5;
                 } else {
-                    logEl.innerHTML += "❌ Kalah. Tingkatkan rating pemainmu lewat transfer!";
+                    logEl.innerHTML += "❌ Kalah. Perkuat pemain di skuad inti!";
                 }
                 updateUI();
                 pilihRivalBaru();
