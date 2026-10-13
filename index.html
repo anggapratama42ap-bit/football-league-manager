@@ -119,7 +119,9 @@
             font-size: 10px;
             text-align: center;
             min-width: 60px;
+            cursor: pointer;
         }
+        .player-slot:hover { background: #0284c7; }
 
         .match-log {
             background: #0f172a;
@@ -209,6 +211,7 @@
                     <option value="4-4-2">4-4-2 (Seimbang)</option>
                     <option value="3-5-2">3-5-2 (Penguasaan Bola)</option>
                 </select>
+                <p style="font-size: 11px; color: #38bdf8; text-align: center; margin: 4px 0;">Klik kotak pemain di lapangan atau daftar cadangan untuk rotasi instan!</p>
                 <div class="pitch" id="pitch-container">
                     <div class="pitch-line-center"></div>
                 </div>
@@ -227,7 +230,7 @@
         <div id="tab-transfer" class="tab-content" style="display: none;">
             <div class="card">
                 <h2>🛒 Bursa Transfer Bintang</h2>
-                <p style="font-size: 11px; color: #94a3b8;">Pasar diperbarui otomatis setiap 10 menit.</p>
+                <p style="font-size: 12px; color: #fbbf24; text-align: center; margin-bottom: 8px;">⏱️ Pasar di-refresh dalam: <strong id="market-timer">10:00</strong></p>
                 <div style="max-height: 180px; overflow-y: auto;">
                     <table class="transfer-table" id="transfer-table">
                         <tr><th>Pemain</th><th>Pos</th><th>Rat</th><th>Harga</th><th>Aksi</th></tr>
@@ -240,11 +243,11 @@
         <div id="tab-akademi" class="tab-content" style="display: none;">
             <div class="card">
                 <h2>🎓 Akademi Remaja & Training</h2>
-                <p style="font-size: 12px; color: #94a3b8;">Latih pemain muda secara bertahap hingga siap dipromosikan!</p>
+                <p style="font-size: 12px; color: #94a3b8;">Latih pemain muda secara berkala tanpa batas waktu, naikkan ratingnya, lalu promosikan!</p>
                 <button class="btn-secondary" onclick="rekrutAkademi()">Rekrut Remaja Baru (Biaya: 5 🪙)</button>
                 <div style="max-height: 160px; overflow-y: auto; margin-top: 10px;">
                     <table class="academy-table" id="academy-table">
-                        <tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Stamina</th><th>Latihan</th><th>Aksi</th></tr>
+                        <tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Stamina</th><th>Aksi Latihan</th></tr>
                     </table>
                 </div>
             </div>
@@ -278,6 +281,22 @@
         let currentRival = "";
         const poolRival = ["Bintang FC", "Rajawali City", "Garuda Perkasa", "Borneo Wanderers", "Sunda Raya", "Andalas FC"];
 
+        // Timer Bursa Transfer (10 Menit = 600 Detik)
+        let timeLeft = 600;
+        setInterval(() => {
+            if(timeLeft > 0) {
+                timeLeft--;
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                let timerEl = document.getElementById("market-timer");
+                if(timerEl) timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            } else {
+                generateRandomMarket();
+                renderTransferTable();
+                timeLeft = 600;
+            }
+        }, 1000);
+
         function generateRandomMarket() {
             const namaPool = ["Marco", "Silva", "Hazard", "Bale", "Modric", "Kroos", "Casemiro", "Benzema", "Vardy", "Sterling"];
             const posPool = ["ST", "CM", "LW", "RW", "CB", "CAM"];
@@ -289,12 +308,6 @@
                 saveData.transferMarket.push({ id: i, nama: randNama, pos: randPos, rating: randRat, harga: randRat - 50, dibeli: false });
             }
         }
-
-        // Jalankan timer per 10 menit untuk refresh bursa transfer
-        setInterval(() => {
-            generateRandomMarket();
-            renderTransferTable();
-        }, 10 * 60 * 1000);
 
         function loginGoogle() {
             let dummyEmail = prompt("Simulasi Login Google: Masukkan email kamu:", "manager@gmail.com");
@@ -347,64 +360,65 @@
             let f = document.getElementById("tactic-formation").value;
             
             if (f === '4-3-3') {
+                // Formasi 4-3-3 Asli (1 GK, 4 DEF, 3 MID, 3 ATT)
                 pitch.innerHTML = `
                     <div class="pitch-line-center"></div>
-                    <div class="pitch-row"><div class="player-slot"><b>ST</b><br>${saveData.lineup[10].nama}</div></div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>LW</b><br>${saveData.lineup[8].nama}</div>
-                        <div class="player-slot"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
-                        <div class="player-slot"><b>RW</b><br>${saveData.lineup[9].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(8)"><b>LW</b><br>${saveData.lineup[8].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(10)"><b>ST</b><br>${saveData.lineup[10].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(9)"><b>RW</b><br>${saveData.lineup[9].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[5].nama}</div>
-                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[6].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(5)"><b>CM</b><br>${saveData.lineup[5].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(7)"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(6)"><b>CM</b><br>${saveData.lineup[6].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>LB</b><br>${saveData.lineup[1].nama}</div>
-                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[2].nama}</div>
-                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[3].nama}</div>
-                        <div class="player-slot"><b>RB</b><br>${saveData.lineup[4].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(1)"><b>LB</b><br>${saveData.lineup[1].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(2)"><b>CB</b><br>${saveData.lineup[2].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(3)"><b>CB</b><br>${saveData.lineup[3].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(4)"><b>RB</b><br>${saveData.lineup[4].nama}</div>
                     </div>
-                    <div class="pitch-row"><div class="player-slot"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
+                    <div class="pitch-row"><div class="player-slot" onclick="rotasiInstan(0)"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
             } else if (f === '4-4-2') {
                 pitch.innerHTML = `
                     <div class="pitch-line-center"></div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[9].nama}</div>
-                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[10].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(9)"><b>ST</b><br>${saveData.lineup[9].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(10)"><b>ST</b><br>${saveData.lineup[10].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>LM</b><br>${saveData.lineup[5].nama}</div>
-                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[6].nama}</div>
-                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[7].nama}</div>
-                        <div class="player-slot"><b>RM</b><br>${saveData.lineup[8].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(5)"><b>LM</b><br>${saveData.lineup[5].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(6)"><b>CM</b><br>${saveData.lineup[6].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(7)"><b>CM</b><br>${saveData.lineup[7].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(8)"><b>RM</b><br>${saveData.lineup[8].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>LB</b><br>${saveData.lineup[1].nama}</div>
-                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[2].nama}</div>
-                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[3].nama}</div>
-                        <div class="player-slot"><b>RB</b><br>${saveData.lineup[4].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(1)"><b>LB</b><br>${saveData.lineup[1].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(2)"><b>CB</b><br>${saveData.lineup[2].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(3)"><b>CB</b><br>${saveData.lineup[3].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(4)"><b>RB</b><br>${saveData.lineup[4].nama}</div>
                     </div>
-                    <div class="pitch-row"><div class="player-slot"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
-            } else { // 3-5-2 yang diperbaiki (pas 11 pemain)
+                    <div class="pitch-row"><div class="player-slot" onclick="rotasiInstan(0)"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
+            } else { // Formasi 3-5-2 Asli (Pas 11 Pemain: 1 GK, 3 CB, 4 Mid/Wingback, 1 CAM, 2 ST)
                 pitch.innerHTML = `
                     <div class="pitch-line-center"></div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[9].nama}</div>
-                        <div class="player-slot"><b>ST</b><br>${saveData.lineup[10].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(9)"><b>ST</b><br>${saveData.lineup[9].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(10)"><b>ST</b><br>${saveData.lineup[10].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>LWB</b><br>${saveData.lineup[5].nama}</div>
-                        <div class="player-slot"><b>CM</b><br>${saveData.lineup[6].nama}</div>
-                        <div class="player-slot"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
-                        <div class="player-slot"><b>RWB</b><br>${saveData.lineup[8].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(5)"><b>LWB</b><br>${saveData.lineup[5].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(6)"><b>CM</b><br>${saveData.lineup[6].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(7)"><b>CAM</b><br>${saveData.lineup[7].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(8)"><b>RWB</b><br>${saveData.lineup[8].nama}</div>
                     </div>
                     <div class="pitch-row">
-                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[1].nama}</div>
-                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[2].nama}</div>
-                        <div class="player-slot"><b>CB</b><br>${saveData.lineup[3].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(1)"><b>CB</b><br>${saveData.lineup[1].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(2)"><b>CB</b><br>${saveData.lineup[2].nama}</div>
+                        <div class="player-slot" onclick="rotasiInstan(3)"><b>CB</b><br>${saveData.lineup[3].nama}</div>
                     </div>
-                    <div class="pitch-row"><div class="player-slot"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
+                    <div class="pitch-row"><div class="player-slot" onclick="rotasiInstan(0)"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
             }
         }
 
@@ -413,7 +427,7 @@
             table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Aksi</th></tr>`;
             saveData.squad.forEach((p, idx) => {
                 let tr = document.createElement("tr");
-                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td><button style="padding:3px 6px; font-size:11px;" onclick="tukarKeInti(${idx})">Mainkan</button></td>`;
+                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td><button style="padding:3px 6px; font-size:11px;" onclick="tukarDariCadangan(${idx})">Geser ke Inti</button></td>`;
                 table.appendChild(tr);
             });
         }
@@ -434,29 +448,46 @@
 
         function renderAcademyTable() {
             let table = document.getElementById("academy-table");
-            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Stamina</th><th>Latihan</th><th>Aksi</th></tr>`;
+            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Stamina</th><th>Aksi Latihan</th></tr>`;
             saveData.academy.forEach((p, idx) => {
                 let tr = document.createElement("tr");
-                let statusText = p.progres >= 3 ? "✅ Siap Promosi" : `Progress (${p.progres}/3)`;
-                let actionBtn = p.progres >= 3 
-                    ? `<button style="padding:3px 6px; font-size:11px; background:#22c55e;" onclick="promosiAkademi(${idx})">Promosi</button>` 
-                    : `<button style="padding:3px 6px; font-size:11px; background:#0284c7;" onclick="latihAkademi(${idx})">Latih</button>`;
-                
-                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td>⚡ ${p.stamina}%</td><td>${statusText}</td><td>${actionBtn} <button style="padding:2px 4px; font-size:9px; background:#fbbf24; color:black; margin-top:2px;" onclick="tambahStamina(${idx})">+Stamina (2🪙)</button></td>`;
+                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td>⚡ ${p.stamina}%</td><td>
+                    <button style="padding:2px 5px; font-size:11px; background:#0284c7;" onclick="latihAkademi(${idx})">Latih (-10% Stamina)</button>
+                    <button style="padding:2px 5px; font-size:11px; background:#fbbf24; color:black;" onclick="tambahStamina(${idx})">+Stamina (1🪙)</button>
+                    <button style="padding:2px 5px; font-size:11px; background:#22c55e;" onclick="promosiAkademi(${idx})">Promosi</button>
+                </td>`;
                 table.appendChild(tr);
             });
         }
 
-        function tukarKeInti(squadIdx) {
-            let slot = prompt("Masukkan nomor urut posisi lineup inti yang ingin diganti (0 s.d 10):", "0");
-            let sIdx = parseInt(slot);
-            if(!isNaN(sIdx) && sIdx >= 0 && sIdx < 11) {
-                let temp = saveData.lineup[sIdx];
-                saveData.lineup[sIdx] = saveData.squad[squadIdx];
+        function rotasiInstan(lineupIdx) {
+            if(saveData.squad.length === 0) {
+                alert("Daftar skuad cadangan kosong!");
+                return;
+            }
+            let namaCadanganList = saveData.squad.map((p, i) => `${i + 1}. ${p.nama} (${p.pos} - Rat: ${p.rating})`).join("\n");
+            let pilih = prompt(`Pilih pemain cadangan yang akan dimasukkan ke posisi ${saveData.lineup[lineupIdx].pos}:\n\n` + namaCadanganList + `\n\nMasukkan nomor urut cadangan:`);
+            let sIdx = parseInt(pilih) - 1;
+            if(!isNaN(sIdx) && sIdx >= 0 && sIdx < saveData.squad.length) {
+                let temp = saveData.lineup[lineupIdx];
+                saveData.lineup[lineupIdx] = saveData.squad[sIdx];
+                saveData.squad[sIdx] = temp;
+                renderPitch();
+                renderSquadTable();
+                alert("Rotasi posisi berhasil!");
+            }
+        }
+
+        function tukarDariCadangan(squadIdx) {
+            let slot = prompt("Masukkan nomor urut posisi lineup inti yang ingin ditukar (0 untuk GK sampai 10 untuk Penyerang):", "0");
+            let lIdx = parseInt(slot);
+            if(!isNaN(lIdx) && lIdx >= 0 && lIdx < 11) {
+                let temp = saveData.lineup[lIdx];
+                saveData.lineup[lIdx] = saveData.squad[squadIdx];
                 saveData.squad[squadIdx] = temp;
                 renderPitch();
                 renderSquadTable();
-                alert("Rotasi pemain berhasil!");
+                alert("Pemain berhasil digeser ke skuad inti!");
             }
         }
 
@@ -479,7 +510,7 @@
             if(saveData.token >= 5) {
                 saveData.token -= 5;
                 let namaMuda = ["Fajar", "Yoga", "Dimas", "Rian", "Ilham"][Math.floor(Math.random()*5)];
-                saveData.academy.push({ nama: namaMuda, pos: "CM", rating: 70, stamina: 100, progres: 0 });
+                saveData.academy.push({ nama: namaMuda, pos: "CM", rating: 70, stamina: 100 });
                 updateUI();
                 renderAcademyTable();
                 alert("Remaja akademi berhasil direkrut.");
@@ -490,26 +521,25 @@
 
         function latihAkademi(idx) {
             let p = saveData.academy[idx];
-            if(p.stamina >= 30) {
-                p.stamina -= 30;
-                p.progres += 1;
-                p.rating += 2;
+            if(p.stamina >= 10) {
+                p.stamina -= 10;
+                p.rating += 1;
                 renderAcademyTable();
-                alert(p.nama + " berhasil dilatih! Progres latihan: " + p.progres + "/3.");
+                alert(p.nama + " sukses dilatih! Rating naik menjadi " + p.rating + " (Stamina sisa: " + p.stamina + "%).");
             } else {
                 alert("Stamina pemain terlalu rendah! Silakan isi ulang stamina menggunakan token.");
             }
         }
 
         function tambahStamina(idx) {
-            if(saveData.token >= 2) {
-                saveData.token -= 2;
+            if(saveData.token >= 1) {
+                saveData.token -= 1;
                 saveData.academy[idx].stamina = 100;
                 updateUI();
                 renderAcademyTable();
                 alert("Stamina " + saveData.academy[idx].nama + " kembali penuh (100%)!");
             } else {
-                alert("Token tidak cukup untuk menambah stamina!");
+                alert("Butuh 1 token untuk mengisi stamina!");
             }
         }
 
