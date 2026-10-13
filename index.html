@@ -64,7 +64,7 @@
             font-size: 13px;
             color: #38bdf8;
         }
-        .transfer-item {
+        .transfer-item, .player-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -102,8 +102,15 @@
         <h1 id="display-club">Klub: -</h1>
         <div class="card">
             <p>Manajer: <span id="display-manager">-</span></p>
-            <p>Token: <span id="display-token">100</span> 🪙 | Kas Klub: Rp <span id="display-money">50.000.000</span></p>
+            <p>Token: <span id="display-token">100</span> 🪙 | Kas: Rp <span id="display-money">50.000.000</span></p>
             <button onclick="tambahToken()">Klaim Token Harian (+5)</button>
+        </div>
+
+        <div class="card">
+            <h2>👥 Skuad Pemain & Rating</h2>
+            <div id="squad-list">
+                <!-- Daftar pemain tim sendiri akan dimuat di sini -->
+            </div>
         </div>
 
         <div class="card">
@@ -122,11 +129,11 @@
             <h2>🛒 Bursa Transfer Pemain</h2>
             <div class="transfer-item">
                 <span>⭐ Marco (Rating 82 - ST)</span>
-                <button style="width: auto; padding: 6px 12px;" onclick="beliPemain('Marco', 30)">Beli (30 🪙)</button>
+                <button style="width: auto; padding: 6px 12px;" onclick="beliPemain('Marco', 82, 'ST', 30)">Beli (30 🪙)</button>
             </div>
             <div class="transfer-item">
                 <span>⭐ Silva (Rating 80 - MID)</span>
-                <button style="width: auto; padding: 6px 12px;" onclick="beliPemain('Silva', 25)">Beli (25 🪙)</button>
+                <button style="width: auto; padding: 6px 12px;" onclick="beliPemain('Silva', 80, 'MID', 25)">Beli (25 🪙)</button>
             </div>
         </div>
 
@@ -145,7 +152,19 @@
     </div>
 
     <script>
-        let saveData = { email: "", manager: "", club: "", token: 100, money: 50000000 };
+        let saveData = { 
+            email: "", 
+            manager: "", 
+            club: "", 
+            token: 100, 
+            money: 50000000,
+            squad: [
+                { nama: "Kurnia", posisi: "GK", rating: 75 },
+                { nama: "Robbi", posisi: "DEF", rating: 77 },
+                { nama: "Ahmad", posisi: "MID", rating: 78 },
+                { nama: "Eka", posisi: "ATT", rating: 80 }
+            ]
+        };
         let currentRival = "";
         const poolRival = ["Bintang FC", "Rajawali City", "Garuda Perkasa", "Borneo Wanderers", "Sunda Raya", "Andalas FC"];
 
@@ -169,7 +188,9 @@
 
             document.getElementById("display-manager").innerText = saveData.manager;
             document.getElementById("display-club").innerText = "Klub: " + saveData.club;
+            
             updateUI();
+            renderSquad();
 
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("game-screen").style.display = "block";
@@ -180,6 +201,17 @@
         function updateUI() {
             document.getElementById("display-token").innerText = saveData.token;
             document.getElementById("display-money").innerText = saveData.money.toLocaleString('id-ID');
+        }
+
+        function renderSquad() {
+            let squadEl = document.getElementById("squad-list");
+            squadEl.innerHTML = "";
+            saveData.squad.forEach(p => {
+                let div = document.createElement("div");
+                div.className = "player-item";
+                div.innerHTML = `<span>👤 <strong>${p.nama}</strong> (${p.posisi})</span> <span style="color: #38bdf8;">Rating: ${p.rating}</span>`;
+                squadEl.appendChild(div);
+            });
         }
 
         function pilihRivalBaru() {
@@ -193,10 +225,12 @@
             alert("Berhasil klaim 5 token gratis!");
         }
 
-        function beliPemain(namaPemain, hargaToken) {
+        function beliPemain(namaPemain, ratingPemain, posisiPemain, hargaToken) {
             if(saveData.token >= hargaToken) {
                 saveData.token -= hargaToken;
+                saveData.squad.push({ nama: namaPemain, posisi: posisiPemain, rating: ratingPemain });
                 updateUI();
+                renderSquad();
                 alert("Sukses merekrut " + namaPemain + " ke dalam skuad " + saveData.club + "!");
             } else {
                 alert("Token tidak cukup! Silakan kumpulkan token terlebih dahulu.");
@@ -206,18 +240,22 @@
         function mulaiPertandingan() {
             let formasi = document.getElementById("tactic-formation").value;
             let hargaTiket = parseInt(document.getElementById("ticket-price").value) || 50000;
-            let pendapatanTiket = hargaTiket * 1000; // Asumsi 1000 penonton hadir
+            let pendapatanTiket = hargaTiket * 1000;
 
             saveData.money += pendapatanTiket;
+
+            // Hitung rata-rata rating skuad untuk mempengaruhi hasil pertandingan
+            let totalRating = saveData.squad.reduce((sum, p) => sum + p.rating, 0);
+            let avgRating = totalRating / saveData.squad.length;
 
             let logEl = document.getElementById("match-log");
             logEl.innerHTML = "Pertandingan dimulai: " + saveData.club + " vs " + currentRival + " (" + formasi + ")...\n";
 
-            let skorUser = Math.floor(Math.random() * 4);
-            let skorRival = Math.floor(Math.random() * 4);
+            let skorUser = Math.floor(Math.random() * 3) + (avgRating > 78 ? 1 : 0);
+            let skorRival = Math.floor(Math.random() * 3);
 
             setTimeout(() => {
-                logEl.innerHTML += "Pendapatan Tiket Stadion: Rp " + pendapatanTiket.toLocaleString('id-ID') + "\n";
+                logEl.innerHTML += "Pendapatan Tiket: Rp " + pendapatanTiket.toLocaleString('id-ID') + "\n";
                 logEl.innerHTML += "Skor Akhir: " + saveData.club + " " + skorUser + " - " + skorRival + " " + currentRival + "\n";
                 if(skorUser > skorRival) {
                     logEl.innerHTML += "🎉 Menang! Bonus +10 Token.";
@@ -226,7 +264,7 @@
                     logEl.innerHTML += "🤝 Hasil imbang. Bonus +5 Token.";
                     saveData.token += 5;
                 } else {
-                    logEl.innerHTML += "❌ Kalah. Tetap semangat evaluasi taktik!";
+                    logEl.innerHTML += "❌ Kalah. Tingkatkan rating pemainmu lewat transfer!";
                 }
                 updateUI();
                 pilihRivalBaru();
