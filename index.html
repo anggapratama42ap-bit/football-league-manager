@@ -6,50 +6,148 @@
     <title>Football League Manager</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f172a;
             color: #ffffff;
-            text-align: center;
-            padding: 20px;
+            margin: 0;
+            padding: 15px;
         }
         .container {
-            max-width: 400px;
+            max-width: 500px;
             margin: 0 auto;
             background: #1e293b;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        h1, h2 { text-align: center; color: #38bdf8; }
+        .card {
+            background: #334155;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
         }
         button {
             background-color: #22c55e;
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 15px;
+            border-radius: 6px;
             cursor: pointer;
-            margin-top: 15px;
+            width: 100%;
+            margin-top: 8px;
+            font-weight: bold;
         }
-        button:hover {
-            background-color: #16a34a;
+        button:hover { background-color: #16a34a; }
+        .btn-secondary { background-color: #64748b; }
+        .btn-secondary:hover { background-color: #475569; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
         }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 5px; color: #cbd5e1; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>⚽ Football Manager</h1>
-        <p>Klub: <strong>Garuda FC</strong></p>
-        <p>Token: <span id="token">100</span> 🪙</p>
-        <button onclick="tambahToken()">Ambil Bonus Token</button>
+    <div class="container" id="setup-screen">
+        <h1>⚽ Buat Klubmu</h1>
+        <p>Tentukan nama manajer dan nama klub impianmu untuk memulai karier!</p>
+        <label>Nama Manajer:</label>
+        <input type="text" id="manager-name" placeholder="Contoh: Coach Alex">
+        <label>Nama Klub:</label>
+        <input type="text" id="club-name" placeholder="Contoh: Garuda United">
+        <button onclick="mulaiKarier()">Mulai Karier Manajer</button>
+    </div>
+
+    <div class="container" id="game-screen" style="display: none;">
+        <h1 id="display-club">Klub: -</h1>
+        <div class="card">
+            <p>Manajer: <span id="display-manager">-</span></p>
+            <p>Token: <span id="display-token">100</span> 🪙</p>
+            <button onclick="tambahToken()">Klaim Token Harian</button>
+        </div>
+
+        <div class="card">
+            <h2>🏆 Menu Kompetisi</h2>
+            <button onclick="mainkanKompetisi('Liga Domestik')">Ikuti Liga Domestik</button>
+            <button onclick="mainkanKompetisi('Piala Nasional (Cup)')">Ikuti Piala Nasional (Cup)</button>
+            <button onclick="mainkanKompetisi('Champions League')">Ikuti Champions League</button>
+        </div>
+
+        <div class="card">
+            <h2>🛡️ Tim Rival di Divisi</h2>
+            <ul id="rival-list">
+                <!-- Daftar tim acak akan muncul di sini -->
+            </ul>
+        </div>
     </div>
 
     <script>
-        let jumlahToken = 100;
+        let saveData = {
+            manager: "",
+            club: "",
+            token: 100
+        };
+
+        const namaRivalRandom = [
+            "Bintang FC", "Rajawali City", "Garuda Perkasa", 
+            "Borneo Wanderers", "Sunda Raya", "Andalas FC", 
+            "Java Warriors", "Merdeka Rovers", "Nusantara FC"
+        ];
+
+        function mulaiKarier() {
+            let m = document.getElementById("manager-name").value;
+            let c = document.getElementById("club-name").value;
+
+            if(m === "" || c === "") {
+                alert("Nama manajer dan nama klub wajib diisi!");
+                return;
+            }
+
+            saveData.manager = m;
+            saveData.club = c;
+
+            document.getElementById("display-manager").innerText = saveData.manager;
+            document.getElementById("display-club").innerText = "Klub: " + saveData.club;
+            document.getElementById("display-token").innerText = saveData.token;
+
+            // Sembunyikan layar setup, tampilkan layar utama game
+            document.getElementById("setup-screen").style.display = "none";
+            document.getElementById("game-screen").style.display = "block";
+
+            generateRivals();
+        }
+
+        function generateRivals() {
+            let listEl = document.getElementById("rival-list");
+            listEl.innerHTML = "";
+            // Ambil 4 rival acak
+            let acak = namaRivalRandom.sort(() => 0.5 - Math.random()).slice(0, 4);
+            acak.forEach(rival => {
+                let li = document.createElement("li");
+                li.innerText = rival;
+                listEl.appendChild(li);
+            });
+        }
+
         function tambahToken() {
-            jumlahToken += 5;
-            document.getElementById("token").innerText = jumlahToken;
+            saveData.token += 5;
+            document.getElementById("display-token").innerText = saveData.token;
             alert("Berhasil klaim 5 token gratis!");
+        }
+
+        function mainkanKompetisi(namaKompetisi) {
+            alert("Kamu mendaftarkan " + saveData.club + " ke ajang " + namaKompetisi + "! Pertandingan akan segera disimulasikan.");
         }
     </script>
 
