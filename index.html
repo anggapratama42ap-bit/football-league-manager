@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football League Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        button {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #16a34a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>⚽ Football Manager</h1>
+        <p>Klub: <strong>Garuda FC</strong></p>
+        <p>Token: <span id="token">100</span> 🪙</p>
+        <button onclick="tambahToken()">Ambil Bonus Token</button>
+    </div>
+
+    <script>
+        let jumlahToken = 100;
+        function tambahToken() {
+            jumlahToken += 5;
+            document.getElementById("token").innerText = jumlahToken;
+            alert("Berhasil klaim 5 token gratis!");
+        }
+    </script>
+
+</body>
+</html>
