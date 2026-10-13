@@ -88,7 +88,7 @@
             background: linear-gradient(to bottom, #166534, #15803d);
             border: 2px solid #22c55e;
             border-radius: 10px;
-            height: 320px;
+            height: 330px;
             position: relative;
             margin-top: 10px;
             padding: 12px 10px;
@@ -125,7 +125,7 @@
             background: #0f172a;
             padding: 10px;
             border-radius: 6px;
-            height: 140px;
+            height: 150px;
             overflow-y: auto;
             font-family: monospace;
             font-size: 12px;
@@ -187,7 +187,7 @@
                 <h2>📅 Jadwal Pertandingan</h2>
                 <p>Tanggal: <strong style="color: #38bdf8;">14 Oktober 2026</strong></p>
                 <p>Lawan Berikutnya: <strong id="rival-name">-</strong></p>
-                <button onclick="tambahToken()">Klaim Token Harian (+5)</button>
+                <button id="btn-claim" onclick="klaimTokenHarian()">Klaim Token Harian (+5)</button>
             </div>
             <div class="card">
                 <h2>🏆 Live Match Center</h2>
@@ -227,6 +227,7 @@
         <div id="tab-transfer" class="tab-content" style="display: none;">
             <div class="card">
                 <h2>🛒 Bursa Transfer Bintang</h2>
+                <p style="font-size: 11px; color: #94a3b8;">Pasar diperbarui otomatis setiap 10 menit.</p>
                 <div style="max-height: 180px; overflow-y: auto;">
                     <table class="transfer-table" id="transfer-table">
                         <tr><th>Pemain</th><th>Pos</th><th>Rat</th><th>Harga</th><th>Aksi</th></tr>
@@ -239,11 +240,11 @@
         <div id="tab-akademi" class="tab-content" style="display: none;">
             <div class="card">
                 <h2>🎓 Akademi Remaja & Training</h2>
-                <p style="font-size: 12px; color: #94a3b8;">Rekrut pemuda, lalu latih kemampuannya sebelum masuk skuad utama!</p>
+                <p style="font-size: 12px; color: #94a3b8;">Latih pemain muda secara bertahap hingga siap dipromosikan!</p>
                 <button class="btn-secondary" onclick="rekrutAkademi()">Rekrut Remaja Baru (Biaya: 5 🪙)</button>
                 <div style="max-height: 160px; overflow-y: auto; margin-top: 10px;">
                     <table class="academy-table" id="academy-table">
-                        <tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Status Latihan</th><th>Aksi</th></tr>
+                        <tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Stamina</th><th>Latihan</th><th>Aksi</th></tr>
                     </table>
                 </div>
             </div>
@@ -252,7 +253,7 @@
 
     <script>
         let saveData = { 
-            email: "", manager: "", club: "", token: 100, money: 50000000,
+            email: "", manager: "", club: "", token: 100, money: 50000000, lastClaimDate: "",
             lineup: [
                 { pos: "GK", nama: "M. Neuer", rating: 86 },
                 { pos: "LB", nama: "A. Davies", rating: 81 },
@@ -271,15 +272,29 @@
                 { nama: "Robbi", pos: "CB", rating: 77 },
                 { nama: "Ahmad", pos: "CM", rating: 78 }
             ],
-            transferMarket: [
-                { id: 1, nama: "Marco", pos: "ST", rating: 82, harga: 30, dibeli: false },
-                { id: 2, nama: "Silva", pos: "CM", rating: 80, harga: 25, dibeli: false },
-                { id: 3, nama: "Hazard", pos: "LW", rating: 81, harga: 28, dibeli: false }
-            ],
+            transferMarket: [],
             academy: []
         };
         let currentRival = "";
         const poolRival = ["Bintang FC", "Rajawali City", "Garuda Perkasa", "Borneo Wanderers", "Sunda Raya", "Andalas FC"];
+
+        function generateRandomMarket() {
+            const namaPool = ["Marco", "Silva", "Hazard", "Bale", "Modric", "Kroos", "Casemiro", "Benzema", "Vardy", "Sterling"];
+            const posPool = ["ST", "CM", "LW", "RW", "CB", "CAM"];
+            saveData.transferMarket = [];
+            for(let i=1; i<=3; i++) {
+                let randNama = namaPool[Math.floor(Math.random() * namaPool.length)] + " " + i;
+                let randPos = posPool[Math.floor(Math.random() * posPool.length)];
+                let randRat = Math.floor(Math.random() * 8) + 78;
+                saveData.transferMarket.push({ id: i, nama: randNama, pos: randPos, rating: randRat, harga: randRat - 50, dibeli: false });
+            }
+        }
+
+        // Jalankan timer per 10 menit untuk refresh bursa transfer
+        setInterval(() => {
+            generateRandomMarket();
+            renderTransferTable();
+        }, 10 * 60 * 1000);
 
         function loginGoogle() {
             let dummyEmail = prompt("Simulasi Login Google: Masukkan email kamu:", "manager@gmail.com");
@@ -298,6 +313,7 @@
 
             saveData.manager = m;
             saveData.club = c;
+            generateRandomMarket();
 
             document.getElementById("display-manager").innerText = saveData.manager;
             document.getElementById("display-club").innerText = "Klub: " + saveData.club;
@@ -370,7 +386,7 @@
                         <div class="player-slot"><b>RB</b><br>${saveData.lineup[4].nama}</div>
                     </div>
                     <div class="pitch-row"><div class="player-slot"><b>GK</b><br>${saveData.lineup[0].nama}</div></div>`;
-            } else { // 3-5-2
+            } else { // 3-5-2 yang diperbaiki (pas 11 pemain)
                 pitch.innerHTML = `
                     <div class="pitch-line-center"></div>
                     <div class="pitch-row">
@@ -418,12 +434,15 @@
 
         function renderAcademyTable() {
             let table = document.getElementById("academy-table");
-            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Status Latihan</th><th>Aksi</th></tr>`;
+            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Rat</th><th>Stamina</th><th>Latihan</th><th>Aksi</th></tr>`;
             saveData.academy.forEach((p, idx) => {
                 let tr = document.createElement("tr");
-                let statusText = p.dilatih ? "✅ Siap Promosi" : "⏳ Sedang Dilatih";
-                let actionBtn = p.dilatih ? `<button style="padding:3px 6px; font-size:11px; background:#22c55e;" onclick="promosiAkademi(${idx})">Promosi</button>` : `<button style="padding:3px 6px; font-size:11px; background:#0284c7;" onclick="latihAkademi(${idx})">Latih</button>`;
-                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td>${statusText}</td><td>${actionBtn}</td>`;
+                let statusText = p.progres >= 3 ? "✅ Siap Promosi" : `Progress (${p.progres}/3)`;
+                let actionBtn = p.progres >= 3 
+                    ? `<button style="padding:3px 6px; font-size:11px; background:#22c55e;" onclick="promosiAkademi(${idx})">Promosi</button>` 
+                    : `<button style="padding:3px 6px; font-size:11px; background:#0284c7;" onclick="latihAkademi(${idx})">Latih</button>`;
+                
+                tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.rating}</td><td>⚡ ${p.stamina}%</td><td>${statusText}</td><td>${actionBtn} <button style="padding:2px 4px; font-size:9px; background:#fbbf24; color:black; margin-top:2px;" onclick="tambahStamina(${idx})">+Stamina (2🪙)</button></td>`;
                 table.appendChild(tr);
             });
         }
@@ -433,7 +452,7 @@
             let sIdx = parseInt(slot);
             if(!isNaN(sIdx) && sIdx >= 0 && sIdx < 11) {
                 let temp = saveData.lineup[sIdx];
-                saveData.lineup[sIdx] = saveData.squadsquadIdx || saveData.squad[squadIdx];
+                saveData.lineup[sIdx] = saveData.squad[squadIdx];
                 saveData.squad[squadIdx] = temp;
                 renderPitch();
                 renderSquadTable();
@@ -460,20 +479,38 @@
             if(saveData.token >= 5) {
                 saveData.token -= 5;
                 let namaMuda = ["Fajar", "Yoga", "Dimas", "Rian", "Ilham"][Math.floor(Math.random()*5)];
-                saveData.academy.push({ nama: namaMuda, pos: "CM", rating: 70, dilatih: false });
+                saveData.academy.push({ nama: namaMuda, pos: "CM", rating: 70, stamina: 100, progres: 0 });
                 updateUI();
                 renderAcademyTable();
-                alert("Remaja akademi berhasil direkrut. Silakan jalankan program latihan!");
+                alert("Remaja akademi berhasil direkrut.");
             } else {
                 alert("Token butuh 5 untuk merekrut akademi!");
             }
         }
 
         function latihAkademi(idx) {
-            saveData.academy[idx].dilatih = true;
-            saveData.academy[idx].rating += 5; // Naik rating setelah dilatih
-            renderAcademyTable();
-            alert(saveData.academy[idx].nama + " telah selesai latihan! Rating meningkat menjadi " + saveData.academy[idx].rating + ".");
+            let p = saveData.academy[idx];
+            if(p.stamina >= 30) {
+                p.stamina -= 30;
+                p.progres += 1;
+                p.rating += 2;
+                renderAcademyTable();
+                alert(p.nama + " berhasil dilatih! Progres latihan: " + p.progres + "/3.");
+            } else {
+                alert("Stamina pemain terlalu rendah! Silakan isi ulang stamina menggunakan token.");
+            }
+        }
+
+        function tambahStamina(idx) {
+            if(saveData.token >= 2) {
+                saveData.token -= 2;
+                saveData.academy[idx].stamina = 100;
+                updateUI();
+                renderAcademyTable();
+                alert("Stamina " + saveData.academy[idx].nama + " kembali penuh (100%)!");
+            } else {
+                alert("Token tidak cukup untuk menambah stamina!");
+            }
         }
 
         function promosiAkademi(idx) {
@@ -485,15 +522,21 @@
             alert(p.nama + " resmi dipromosikan ke skuad utama!");
         }
 
+        function klaimTokenHarian() {
+            let hariIni = new Date().toDateString();
+            if(saveData.lastClaimDate === hariIni) {
+                alert("Kamu sudah mengklaim token hari ini! Silakan kembali besok.");
+                return;
+            }
+            saveData.lastClaimDate = hariIni;
+            saveData.token += 5;
+            updateUI();
+            alert("Berhasil klaim 5 token gratis hari ini!");
+        }
+
         function pilihRivalBaru() {
             currentRival = poolRival[Math.floor(Math.random() * poolRival.length)];
             document.getElementById("rival-name").innerText = currentRival;
-        }
-
-        function tambahToken() {
-            saveData.token += 5;
-            updateUI();
-            alert("Berhasil klaim 5 token gratis!");
         }
 
         function mulaiPertandinganLive() {
@@ -512,19 +555,24 @@
                 menit += 15;
                 if(menit <= 90) {
                     let eventRand = Math.random();
-                    if(eventRand > 0.5 && avgRating >= 80) {
+                    if(eventRand > 0.65) {
                         skorUser++;
-                        logEl.innerHTML += `⏱️ Menit ${menit}': GOOOAL! ${saveData.club} mencetak angka!\n`;
-                    } else if(eventRand < 0.3) {
+                        logEl.innerHTML += `⏱️ Menit ${menit}': GOOOAL! Umpan matang diselesaikan sempurna oleh lini serang ${saveData.club}!\n`;
+                    } else if(eventRand > 0.45 && eventRand <= 0.65) {
+                        logEl.innerHTML += `⏱️ Menit ${menit}': Peluang emas! Tendangan keras membentur tiang gawang ${currentRival}.\n`;
+                    } else if(eventRand > 0.25 && eventRand <= 0.45) {
+                        let kartu = Math.random() > 0.5 ? "Kartu Kuning 🟨" : "Kartu Merah 🟥";
+                        logEl.innerHTML += `⏱️ Menit ${menit}': Pelanggaran keras! Wasit mengeluarkan ${kartu} untuk pemain lawan.\n`;
+                    } else if(eventRand > 0.1 && eventRand <= 0.25) {
                         skorRival++;
-                        logEl.innerHTML += `⏱️ Menit ${menit}': Berbahaya! ${currentRival} menjebol gawang!\n`;
+                        logEl.innerHTML += `⏱️ Menit ${menit}': Serangan balik cepat! ${currentRival} sukses menjebol gawang.\n`;
                     } else {
-                        logEl.innerHTML += `⏱️ Menit ${menit}': Jual beli serangan sengit di lini tengah.\n`;
+                        logEl.innerHTML += `⏱️ Menit ${menit}': Jual beli serangan sengit terjadi di lini tengah.\n`;
                     }
                     logEl.scrollTop = logEl.scrollHeight;
                 } else {
                     clearInterval(interval);
-                    logEl.innerHTML += `\n🏁 Peluit panjang berbunyi! Skor Akhir: ${saveData.club} ${skorUser} - ${skorRival} ${currentRival}\n`;
+                    logEl.innerHTML += `\n🏁 Peluit akhir berbunyi! Skor: ${saveData.club} ${skorUser} - ${skorRival} ${currentRival}\n`;
                     if(skorUser > skorRival) {
                         logEl.innerHTML += "🎉 Luar Biasa! Tim Kamu Menang (+10 Token).";
                         saveData.token += 10;
@@ -538,7 +586,7 @@
                     pilihRivalBaru();
                     btn.disabled = false;
                 }
-            }, 800);
+            }, 900);
         }
     </script>
 
