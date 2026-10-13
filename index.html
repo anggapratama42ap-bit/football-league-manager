@@ -19,15 +19,13 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-            text-align: center;
         }
-        h1, h2 { color: #38bdf8; }
+        h1, h2 { color: #38bdf8; text-align: center; }
         .card {
             background: #334155;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 12px;
-            text-align: left;
         }
         button {
             background-color: #22c55e;
@@ -42,15 +40,9 @@
             font-weight: bold;
         }
         button:hover { background-color: #16a34a; }
-        .btn-google {
-            background-color: #ea4335;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+        .btn-google { background-color: #ea4335; }
         .btn-google:hover { background-color: #d33828; }
-        input {
+        input, select {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -60,125 +52,111 @@
             background: #0f172a;
             color: white;
             box-sizing: border-box;
-            text-align: left;
         }
-        label { text-align: left; display: block; font-size: 14px; color: #94a3b8; }
+        label { display: block; font-size: 14px; color: #94a3b8; margin-top: 5px; }
         ul { padding-left: 20px; }
         li { margin-bottom: 5px; color: #cbd5e1; }
+        .match-log {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 6px;
+            height: 120px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            color: #38bdf8;
+        }
     </style>
 </head>
 <body>
 
-    <!-- TAMPILAN 1: LOGIN GOOGLE & SETUP KLUB -->
+    <!-- SCREEN 1: LOGIN -->
     <div class="container" id="login-screen">
         <h1>⚽ Football Manager</h1>
-        <p>Kelola klub impianmu, atur taktik, dan raih trofi juara!</p>
-        
+        <p style="text-align: center;">Kelola klub impianmu dan taklukkan kompetisi!</p>
         <div style="margin: 20px 0;" id="google-btn-container">
-            <button class="btn-google" onclick="loginGoogle()">
-                <span>Gunakan Akun Google untuk Masuk</span>
-            </button>
+            <button class="btn-google" onclick="loginGoogle()">Gunakan Akun Google untuk Masuk</button>
         </div>
-
-        <div id="setup-form" style="display: none; border-top: 1px solid #475569; padding-top: 15px; text-align: left;">
-            <h3 style="text-align: center; color: #38bdf8;">Pendaftaran Klub</h3>
+        <div id="setup-form" style="display: none; border-top: 1px solid #475569; padding-top: 15px;">
+            <h3 style="color: #38bdf8; text-align: center;">Pendaftaran Klub</h3>
             <label>Akun Google:</label>
             <input type="text" id="google-email" disabled style="background: #0f172a; color: #94a3b8;">
-            
             <label>Nama Manajer:</label>
             <input type="text" id="manager-name" placeholder="Contoh: Coach Alex">
-            
             <label>Nama Klub:</label>
             <input type="text" id="club-name" placeholder="Contoh: Garuda United">
-            
             <button onclick="mulaiKarier()">Mulai Karier Manajer</button>
         </div>
     </div>
 
-    <!-- TAMPILAN 2: DASHBOARD UTAMA GAME -->
+    <!-- SCREEN 2: DASHBOARD UTAMA -->
     <div class="container" id="game-screen" style="display: none;">
         <h1 id="display-club">Klub: -</h1>
         <div class="card">
-            <p>Manajer: <span id="display-manager">-</span></p>
-            <p>Akun: <span id="display-email" style="font-size: 12px; color: #94a3b8;">-</span></p>
-            <p>Token: <span id="display-token">100</span> 🪙</p>
+            <p>Manajer: <span id="display-manager">-</span> | Token: <span id="display-token">100</span> 🪙</p>
             <button onclick="tambahToken()">Klaim Token Harian</button>
         </div>
 
         <div class="card">
-            <h2>🏆 Menu Kompetisi</h2>
-            <button onclick="mainkanKompetisi('Liga Domestik')">Ikuti Liga Domestik</button>
-            <button onclick="mainkanKompetisi('Piala Nasional (Cup)')">Ikuti Piala Nasional (Cup)</button>
-            <button onclick="mainkanKompetisi('Champions League')">Ikuti Champions League</button>
+            <h2>⚙️ Pengaturan Taktik</h2>
+            <label>Formasi Tim:</label>
+            <select id="tactic-formation">
+                <option value="4-3-3">4-3-3 (Menyerang)</option>
+                <option value="4-4-2">4-4-2 (Seimbang)</option>
+                <option value="3-5-2">3-5-2 (Penguasaan Bola)</option>
+            </select>
         </div>
 
         <div class="card">
-            <h2>🛡️ Tim Rival di Divisi</h2>
-            <ul id="rival-list">
-                <!-- Daftar tim acak -->
-            </ul>
+            <h2>🏆 Menu Kompetisi & Pertandingan</h2>
+            <p>Lawan Berikutnya: <strong id="rival-name">-</strong></p>
+            <button onclick="mulaiPertandingan()">Mainkan Pertandingan (Match)</button>
+        </div>
+
+        <div class="card">
+            <h2>📢 Live Commentary / Hasil</h2>
+            <div class="match-log" id="match-log">
+                Belum ada pertandingan yang dimainkan. Silakan tekan tombol pertandingan di atas.
+            </div>
         </div>
     </div>
 
     <script>
-        let saveData = {
-            email: "",
-            manager: "",
-            club: "",
-            token: 100
-        };
-
-        const namaRivalRandom = [
-            "Bintang FC", "Rajawali City", "Garuda Perkasa", 
-            "Borneo Wanderers", "Sunda Raya", "Andalas FC", 
-            "Java Warriors", "Merdeka Rovers", "Nusantara FC"
-        ];
+        let saveData = { email: "", manager: "", club: "", token: 100 };
+        let currentRival = "";
+        const poolRival = ["Bintang FC", "Rajawali City", "Garuda Perkasa", "Borneo Wanderers", "Sunda Raya", "Andalas FC"];
 
         function loginGoogle() {
-            let dummyEmail = prompt("Simulasi Login Google: Masukkan alamat email Google kamu:", "manager.sepakbola@gmail.com");
-            
+            let dummyEmail = prompt("Simulasi Login Google: Masukkan email kamu:", "manager@gmail.com");
             if(dummyEmail && dummyEmail.includes("@")) {
                 saveData.email = dummyEmail;
                 document.getElementById("google-email").value = saveData.email;
                 document.getElementById("google-btn-container").style.display = "none";
                 document.getElementById("setup-form").style.display = "block";
-            } else {
-                alert("Email tidak valid atau login dibatalkan.");
             }
         }
 
         function mulaiKarier() {
             let m = document.getElementById("manager-name").value;
             let c = document.getElementById("club-name").value;
-
-            if(m === "" || c === "") {
-                alert("Nama manajer dan nama klub wajib diisi!");
-                return;
-            }
+            if(m === "" || c === "") { alert("Isi semua data!"); return; }
 
             saveData.manager = m;
             saveData.club = c;
 
             document.getElementById("display-manager").innerText = saveData.manager;
-            document.getElementById("display-email").innerText = saveData.email;
             document.getElementById("display-club").innerText = "Klub: " + saveData.club;
             document.getElementById("display-token").innerText = saveData.token;
 
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("game-screen").style.display = "block";
 
-            generateRivals();
+            pilihRivalBaru();
         }
 
-        function generateRivals() {
-            let listEl = document.getElementById("rival-list");
-            listEl.innerHTML = "";
-            let acak = namaRivalRandom.sort(() => 0.5 - Math.random()).slice(0, 4);
-            acak.forEach(rival => {
-                let li = document.createElement("li");
-                li.innerText = rival;
-                listEl.appendChild(li);
-            });
+        function pilihRivalBaru() {
+            currentRival = poolRival[Math.floor(Math.random() * poolRival.length)];
+            document.getElementById("rival-name").innerText = currentRival;
         }
 
         function tambahToken() {
@@ -187,8 +165,32 @@
             alert("Berhasil klaim 5 token gratis!");
         }
 
-        function mainkanKompetisi(namaKompetisi) {
-            alert("Kamu mendaftarkan " + saveData.club + " ke ajang " + namaKompetisi + "! Pertandingan akan disimulasikan.");
+        function mulaiPertandingan() {
+            let formasi = document.getElementById("tactic-formation").value;
+            let logEl = document.getElementById("match-log");
+            logEl.innerHTML = "Pertandingan dimulai antara " + saveData.club + " vs " + currentRival + " (Formasi: " + formasi + ")...\n";
+
+            let skorUser = Math.floor(Math.random() * 4);
+            let skorRival = Math.floor(Math.random() * 4);
+
+            setTimeout(() => {
+                logEl.innerHTML += "Menit 45': Babak pertama usai.\n";
+            }, 500);
+
+            setTimeout(() => {
+                logEl.innerHTML += "Menit 90': Peluit panjang dibunyikan!\n";
+                logEl.innerHTML += "Skor Akhir: " + saveData.club + " " + skorUser + " - " + skorRival + " " + currentRival + "\n";
+                if(skorUser > skorRival) {
+                    logEl.innerHTML += "🎉 Selamat! Tim kamu meraih Kemenangan!";
+                    saveData.token += 10; // Bonus token menang
+                } else if(skorUser === skorRival) {
+                    logEl.innerHTML += "🤝 Pertandingan berakhir imbang.";
+                } else {
+                    logEl.innerHTML += "❌ Sayang sekali tim kamu kalah. Evaluasi taktik!";
+                }
+                document.getElementById("display-token").innerText = saveData.token;
+                pilihRivalBaru(); // Ganti lawan berikutnya
+            }, 1000);
         }
     </script>
 
