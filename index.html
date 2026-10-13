@@ -13,8 +13,8 @@
             padding: 15px;
         }
         .container {
-            max-width: 600px;
-            margin: 20px auto;
+            max-width: 550px;
+            margin: 10px auto;
             background: #1e293b;
             padding: 20px;
             border-radius: 12px;
@@ -42,6 +42,32 @@
         button:hover { background-color: #16a34a; }
         .btn-google { background-color: #ea4335; }
         .btn-google:hover { background-color: #d33828; }
+        
+        /* Navbar Menu Tab */
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            background: #0f172a;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .nav-btn {
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            padding: 6px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            width: auto;
+            margin: 0;
+        }
+        .nav-btn.active {
+            color: #38bdf8;
+            border-bottom: 2px solid #38bdf8;
+        }
+
         input, select {
             width: 100%;
             padding: 10px;
@@ -60,14 +86,13 @@
             background: #15803d;
             border: 2px solid #22c55e;
             border-radius: 8px;
-            height: 250px;
-            position: relative;
-            margin-top: 10px;
+            height: 230px;
             display: flex;
             flex-direction: column;
             justify-content: space-around;
             align-items: center;
-            padding: 10px;
+            padding: 8px;
+            margin-top: 10px;
         }
         .pitch-row {
             display: flex;
@@ -75,29 +100,29 @@
             width: 100%;
         }
         .player-node {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             border: 1px solid #38bdf8;
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 10px;
             text-align: center;
         }
         .match-log {
             background: #0f172a;
             padding: 10px;
             border-radius: 6px;
-            height: 100px;
+            height: 90px;
             overflow-y: auto;
             font-family: monospace;
-            font-size: 13px;
+            font-size: 12px;
             color: #38bdf8;
         }
-        .squad-table {
+        .squad-table, .academy-table {
             width: 100%;
-            font-size: 13px;
+            font-size: 12px;
             border-collapse: collapse;
         }
-        .squad-table th, .squad-table td {
+        .squad-table th, .squad-table td, .academy-table th, .academy-table td {
             padding: 6px;
             border-bottom: 1px solid #475569;
             text-align: left;
@@ -109,7 +134,7 @@
     <!-- SCREEN 1: LOGIN -->
     <div class="container" id="login-screen">
         <h1>⚽ Football Manager</h1>
-        <p style="text-align: center;">Kelola 11 pemain inti & taktik timu!</p>
+        <p style="text-align: center;">Kelola klub, taktik, transfer, & akademi remaja!</p>
         <div style="margin: 20px 0;" id="google-btn-container">
             <button class="btn-google" onclick="loginGoogle()">Gunakan Akun Google untuk Masuk</button>
         </div>
@@ -125,84 +150,109 @@
         </div>
     </div>
 
-    <!-- SCREEN 2: DASHBOARD UTAMA -->
+    <!-- SCREEN 2: DASHBOARD UTAMA DENGAN TAB MENU -->
     <div class="container" id="game-screen" style="display: none;">
         <h1 id="display-club">Klub: -</h1>
-        <div class="card">
-            <p>Manajer: <span id="display-manager">-</span> | Token: <span id="display-token">100</span> 🪙</p>
-            <button onclick="tambahToken()">Klaim Token Harian (+5)</button>
+        <div class="card" style="padding: 8px 12px; font-size: 13px; display: flex; justify-content: space-between;">
+            <span>Manajer: <strong id="display-manager">-</strong></span>
+            <span>Token: <strong id="display-token" style="color: #fbbf24;">100</strong> 🪙</span>
+            <span>Kas: Rp <strong id="display-money">50Jt</strong></span>
         </div>
 
-        <div class="card">
-            <h2>🏟️ Papan Taktik Lapangan (4-3-3)</h2>
-            <div class="pitch">
-                <div class="pitch-row">
-                    <div class="player-node">ST: R. Lewandowski (85)</div>
+        <!-- NAVIGASI TAB MENU -->
+        <div class="navbar">
+            <button class="nav-btn active" onclick="switchTab('beranda', this)">🏠 Beranda</button>
+            <button class="nav-btn" onclick="switchTab('taktik', this)">⚙️ Taktik & Skuad</button>
+            <button class="nav-btn" onclick="switchTab('transfer', this)">🛒 Transfer</button>
+            <button class="nav-btn" onclick="switchTab('akademi', this)">🎓 Akademi</button>
+        </div>
+
+        <!-- TAB 1: BERANDA -->
+        <div id="tab-beranda" class="tab-content">
+            <div class="card">
+                <h2>📅 Jadwal & Tanggal Klub</h2>
+                <p>Tanggal Game: <strong id="game-date" style="color: #38bdf8;">14 Oktober 2026</strong></p>
+                <p>Lawan Berikutnya: <strong id="rival-name">-</strong></p>
+                <button onclick="tambahToken()">Klaim Token Harian (+5)</button>
+            </div>
+            <div class="card">
+                <h2>🏆 Menu Pertandingan</h2>
+                <button onclick="mulaiPertandingan()">Mainkan Pertandingan</button>
+            </div>
+            <div class="card">
+                <h2>📢 Live Commentary / Hasil</h2>
+                <div class="match-log" id="match-log">Belum ada pertandingan hari ini.</div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TAKTIK & SKUAD -->
+        <div id="tab-taktik" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>⚙️ Atur Formasi & Posisi</h2>
+                <label>Pilih Formasi:</label>
+                <select id="tactic-formation" onchange="ubahFormasi()">
+                    <option value="4-3-3">4-3-3 (Menyerang)</option>
+                    <option value="4-4-2">4-4-2 (Seimbang)</option>
+                    <option value="3-5-2">3-5-2 (Penguasaan Bola)</option>
+                </select>
+                <div class="pitch" id="pitch-container">
+                    <!-- Visual Lapangan Dinamis -->
                 </div>
-                <div class="pitch-row">
-                    <div class="player-node">LW: L. Sané (82)</div>
-                    <div class="player-node">CAM: K. De Bruyne (88)</div>
-                    <div class="player-node">RW: M. Salah (86)</div>
-                </div>
-                <div class="pitch-row">
-                    <div class="player-node">CM: J. Kimmich (84)</div>
-                    <div class="player-node">CM: Pedri (83)</div>
-                </div>
-                <div class="pitch-row">
-                    <div class="player-node">LB: A. Davies (81)</div>
-                    <div class="player-node">CB: V. van Dijk (87)</div>
-                    <div class="player-node">CB: R. Dias (85)</div>
-                    <div class="player-node">RB: T. Alexander-Arnold (82)</div>
-                </div>
-                <div class="pitch-row">
-                    <div class="player-node">GK: M. Neuer (86)</div>
+            </div>
+            <div class="card">
+                <h2>👥 Daftar Skuad Lengkap</h2>
+                <div style="max-height: 160px; overflow-y: auto;">
+                    <table class="squad-table" id="squad-table">
+                        <tr><th>Nama</th><th>Pos</th><th>Multi</th><th>Rat</th></tr>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>👥 Daftar Skuad Lengkap (11 Inti + Cadangan)</h2>
-            <div style="max-height: 150px; overflow-y: auto;">
-                <table class="squad-table" id="squad-table">
-                    <tr><th>Nama</th><th>Pos Utama</th><th>Multi-Posisi</th><th>Rating</th></tr>
-                </table>
+        <!-- TAB 3: TRANSFER PEMAIN -->
+        <div id="tab-transfer" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>🛒 Bursa Transfer Bintang</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
+                    <span>⭐ Marco (ST - Rat: 82)</span>
+                    <button style="width: auto; padding: 5px 10px;" onclick="beliPemain('Marco', 82, 'ST', 'CF', 30)">Beli (30 🪙)</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 8px; border-radius: 6px; font-size: 13px;">
+                    <span>⭐ Silva (CM - Rat: 80)</span>
+                    <button style="width: auto; padding: 5px 10px;" onclick="beliPemain('Silva', 80, 'CM', 'CAM', 25)">Beli (25 🪙)</button>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>🏆 Menu Pertandingan</h2>
-            <p>Lawan Berikutnya: <strong id="rival-name">-</strong></p>
-            <button onclick="mulaiPertandingan()">Mainkan Pertandingan</button>
-        </div>
-
-        <div class="card">
-            <h2>📢 Live Commentary / Hasil</h2>
-            <div class="match-log" id="match-log">
-                Belum ada pertandingan yang dimainkan.
+        <!-- TAB 4: AKADEMI REMAJA -->
+        <div id="tab-akademi" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>🎓 Akademi Remaja (Youth Academy)</h2>
+                <p style="font-size: 13px; color: #94a3b8;">Rekrut talenta muda potensial untuk masa depan klubmu!</p>
+                <button onclick="cariTalentaMuda()">Cari Talenta Muda (Biaya: 10 🪙)</button>
+                <div id="academy-result" style="margin-top: 10px;"></div>
             </div>
         </div>
     </div>
 
     <script>
         let saveData = { 
-            email: "", manager: "", club: "", token: 100,
+            email: "", manager: "", club: "", token: 100, money: 50000000,
             squad: [
                 { nama: "M. Neuer", pos: "GK", multi: "GK", rating: 86 },
-                { nama: "A. Davies", pos: "LB", multi: "LWB, LM", rating: 81 },
+                { nama: "A. Davies", pos: "LB", multi: "LWB", rating: 81 },
                 { nama: "V. van Dijk", pos: "CB", multi: "CDM", rating: 87 },
                 { nama: "R. Dias", pos: "CB", multi: "CDM", rating: 85 },
-                { nama: "T. Alexander-Arnold", pos: "RB", multi: "RWB, CM", rating: 82 },
-                { nama: "J. Kimmich", pos: "CM", multi: "CDM, RB", rating: 84 },
-                { nama: "Pedri", pos: "CM", multi: "CAM, LM", rating: 83 },
-                { nama: "K. De Bruyne", pos: "CAM", multi: "CM, ST", rating: 88 },
-                { nama: "L. Sané", pos: "LW", multi: "RW, LM", rating: 82 },
-                { nama: "M. Salah", pos: "RW", multi: "ST, RM", rating: 86 },
+                { nama: "T. Alexander-Arnold", pos: "RB", multi: "RWB", rating: 82 },
+                { nama: "J. Kimmich", pos: "CM", multi: "CDM", rating: 84 },
+                { nama: "Pedri", pos: "CM", multi: "CAM", rating: 83 },
+                { nama: "K. De Bruyne", pos: "CAM", multi: "CM", rating: 88 },
+                { nama: "L. Sané", pos: "LW", multi: "RW", rating: 82 },
+                { nama: "M. Salah", pos: "RW", multi: "ST", rating: 86 },
                 { nama: "R. Lewandowski", pos: "ST", multi: "CF", rating: 85 },
-                // Pemain Cadangan
                 { nama: "Kurnia (Cadangan)", pos: "GK", multi: "GK", rating: 75 },
                 { nama: "Robbi (Cadangan)", pos: "CB", multi: "RB", rating: 77 },
-                { nama: "Ahmad (Cadangan)", pos: "CM", multi: "CAM", rating: 78 },
-                { nama: "Eka (Cadangan)", pos: "ST", multi: "LW, RW", rating: 80 }
+                { nama: "Ahmad (Cadangan)", pos: "CM", multi: "CAM", rating: 78 }
             ]
         };
         let currentRival = "";
@@ -231,6 +281,7 @@
             
             updateUI();
             renderSquadTable();
+            renderPitch('4-3-3');
 
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("game-screen").style.display = "block";
@@ -240,11 +291,48 @@
 
         function updateUI() {
             document.getElementById("display-token").innerText = saveData.token;
+            document.getElementById("display-money").innerText = (saveData.money / 1000000).toFixed(0) + " Jt";
+        }
+
+        function switchTab(tabName, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            btn.classList.add('active');
+        }
+
+        function renderPitch(formasi) {
+            let pitch = document.getElementById("pitch-container");
+            if (formasi === '4-3-3') {
+                pitch.innerHTML = `
+                    <div class="pitch-row"><div class="player-node">ST</div></div>
+                    <div class="pitch-row"><div class="player-node">LW</div><div class="player-node">CAM</div><div class="player-node">RW</div></div>
+                    <div class="pitch-row"><div class="player-node">CM</div><div class="player-node">CM</div></div>
+                    <div class="pitch-row"><div class="player-node">LB</div><div class="player-node">CB</div><div class="player-node">CB</div><div class="player-node">RB</div></div>
+                    <div class="pitch-row"><div class="player-node">GK</div></div>`;
+            } else if (formasi === '4-4-2') {
+                pitch.innerHTML = `
+                    <div class="pitch-row"><div class="player-node">ST</div><div class="player-node">ST</div></div>
+                    <div class="pitch-row"><div class="player-node">LM</div><div class="player-node">CM</div><div class="player-node">CM</div><div class="player-node">RM</div></div>
+                    <div class="pitch-row"><div class="player-node">LB</div><div class="player-node">CB</div><div class="player-node">CB</div><div class="player-node">RB</div></div>
+                    <div class="pitch-row"><div class="player-node">GK</div></div>`;
+            } else {
+                pitch.innerHTML = `
+                    <div class="pitch-row"><div class="player-node">ST</div><div class="player-node">ST</div></div>
+                    <div class="pitch-row"><div class="player-node">LWB</div><div class="pitch-row"><div class="player-node">CM</div><div class="player-node">CAM</div><div class="player-node">RWB</div></div>
+                    <div class="pitch-row"><div class="player-node">CB</div><div class="player-node">CB</div><div class="player-node">CB</div></div>
+                    <div class="pitch-row"><div class="player-node">GK</div></div>`;
+            }
+        }
+
+        function ubahFormasi() {
+            let f = document.getElementById("tactic-formation").value;
+            renderPitch(f);
         }
 
         function renderSquadTable() {
             let table = document.getElementById("squad-table");
-            table.innerHTML = `<tr><th>Nama</th><th>Pos Utama</th><th>Multi-Posisi</th><th>Rating</th></tr>`;
+            table.innerHTML = `<tr><th>Nama</th><th>Pos</th><th>Multi</th><th>Rat</th></tr>`;
             saveData.squad.forEach(p => {
                 let tr = document.createElement("tr");
                 tr.innerHTML = `<td>${p.nama}</td><td>${p.pos}</td><td>${p.multi}</td><td style="color:#38bdf8;">${p.rating}</td>`;
@@ -263,9 +351,35 @@
             alert("Berhasil klaim 5 token gratis!");
         }
 
+        function beliPemain(nama, rating, pos, multi, harga) {
+            if(saveData.token >= harga) {
+                saveData.token -= harga;
+                saveData.squad.push({ nama: nama, pos: pos, multi: multi, rating: rating });
+                updateUI();
+                renderSquadTable();
+                alert("Sukses merekrut " + nama + "!");
+            } else {
+                alert("Token tidak cukup!");
+            }
+        }
+
+        function cariTalentaMuda() {
+            if(saveData.token >= 10) {
+                saveData.token -= 10;
+                let namaMuda = ["Fajar", "Yoga", "Dimas", "Rian"][Math.floor(Math.random()*4)] + " (Akademi)";
+                let ratMuda = Math.floor(Math.random() * 6) + 72;
+                saveData.squad.push({ nama: namaMuda, pos: "CM", multi: "CAM, ST", rating: ratMuda });
+                updateUI();
+                renderSquadTable();
+                document.getElementById("academy-result").innerHTML = `<p style="color: #22c55e;">Berhasil menemukan talenta muda: <strong>${namaMuda} (Rating: ${ratMuda})</strong> masuk ke skuad!</p>`;
+            } else {
+                alert("Token butuh 10 untuk memantau akademi!");
+            }
+        }
+
         function mulaiPertandingan() {
             let logEl = document.getElementById("match-log");
-            logEl.innerHTML = "Pertandingan dimulai: " + saveData.club + " vs " + currentRival + "...\n";
+            logEl.innerHTML = "Pertandingan melawan " + currentRival + " dimulai...\n";
 
             let totalRating = saveData.squad.slice(0, 11).reduce((sum, p) => sum + p.rating, 0);
             let avgRating = totalRating / 11;
@@ -274,15 +388,15 @@
             let skorRival = Math.floor(Math.random() * 3);
 
             setTimeout(() => {
-                logEl.innerHTML += "Skor Akhir: " + saveData.club + " " + skorUser + " - " + skorRival + " " + currentRival + "\n";
+                logEl.innerHTML += "Hasil Akhir: " + saveData.club + " " + skorUser + " - " + skorRival + " " + currentRival + "\n";
                 if(skorUser > skorRival) {
-                    logEl.innerHTML += "🎉 Menang! Bonus +10 Token.";
+                    logEl.innerHTML += "🎉 Menang! +10 Token.";
                     saveData.token += 10;
                 } else if(skorUser === skorRival) {
-                    logEl.innerHTML += "🤝 Imbang. Bonus +5 Token.";
+                    logEl.innerHTML += "🤝 Imbang. +5 Token.";
                     saveData.token += 5;
                 } else {
-                    logEl.innerHTML += "❌ Kalah. Perkuat pemain di skuad inti!";
+                    logEl.innerHTML += "❌ Kalah. Cek taktik atau beli pemain baru!";
                 }
                 updateUI();
                 pilihRivalBaru();
