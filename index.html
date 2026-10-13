@@ -14,18 +14,20 @@
         }
         .container {
             max-width: 500px;
-            margin: 0 auto;
+            margin: 20px auto;
             background: #1e293b;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            text-align: center;
         }
-        h1, h2 { text-align: center; color: #38bdf8; }
+        h1, h2 { color: #38bdf8; }
         .card {
             background: #334155;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 12px;
+            text-align: left;
         }
         button {
             background-color: #22c55e;
@@ -40,8 +42,14 @@
             font-weight: bold;
         }
         button:hover { background-color: #16a34a; }
-        .btn-secondary { background-color: #64748b; }
-        .btn-secondary:hover { background-color: #475569; }
+        .btn-google {
+            background-color: #ea4335;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-google:hover { background-color: #d33828; }
         input {
             width: 100%;
             padding: 10px;
@@ -52,27 +60,47 @@
             background: #0f172a;
             color: white;
             box-sizing: border-box;
+            text-align: left;
         }
+        label { text-align: left; display: block; font-size: 14px; color: #94a3b8; }
         ul { padding-left: 20px; }
         li { margin-bottom: 5px; color: #cbd5e1; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="setup-screen">
-        <h1>⚽ Buat Klubmu</h1>
-        <p>Tentukan nama manajer dan nama klub impianmu untuk memulai karier!</p>
-        <label>Nama Manajer:</label>
-        <input type="text" id="manager-name" placeholder="Contoh: Coach Alex">
-        <label>Nama Klub:</label>
-        <input type="text" id="club-name" placeholder="Contoh: Garuda United">
-        <button onclick="mulaiKarier()">Mulai Karier Manajer</button>
+    <!-- TAMPILAN 1: LOGIN GOOGLE & SETUP KLUB -->
+    <div class="container" id="login-screen">
+        <h1>⚽ Football Manager</h1>
+        <p>Kelola klub impianmu, atur taktik, dan raih trofi juara!</p>
+        
+        <div style="margin: 20px 0;">
+            <button class="btn-google" onclick="loginGoogle()">
+                <span>Gunakan Akun Google untuk Masuk</span>
+            </button>
+        </div>
+
+        <div id="setup-form" style="display: none; border-top: 1px solid #475569; padding-top: 15px;">
+            <h3>Pendaftaran Klub</h3>
+            <label>Akun Google:</label>
+            <input type="text" id="google-email" disabled style="background: #1e293b; color: #94a3b8;">
+            
+            <label>Nama Manajer:</label>
+            <input type="text" id="manager-name" placeholder="Contoh: Coach Alex">
+            
+            <label>Nama Klub:</label>
+            <input type="text" id="club-name" placeholder="Contoh: Garuda United">
+            
+            <button onclick="mulaiKarier()">Mulai Karier Manajer</button>
+        </div>
     </div>
 
+    <!-- TAMPILAN 2: DASHBOARD UTAMA GAME -->
     <div class="container" id="game-screen" style="display: none;">
         <h1 id="display-club">Klub: -</h1>
         <div class="card">
             <p>Manajer: <span id="display-manager">-</span></p>
+            <p>Akun: <span id="display-email" style="font-size: 12px; color: #94a3b8;">-</span></p>
             <p>Token: <span id="display-token">100</span> 🪙</p>
             <button onclick="tambahToken()">Klaim Token Harian</button>
         </div>
@@ -87,13 +115,14 @@
         <div class="card">
             <h2>🛡️ Tim Rival di Divisi</h2>
             <ul id="rival-list">
-                <!-- Daftar tim acak akan muncul di sini -->
+                <!-- Daftar tim acak -->
             </ul>
         </div>
     </div>
 
     <script>
         let saveData = {
+            email: "",
             manager: "",
             club: "",
             token: 100
@@ -104,6 +133,20 @@
             "Borneo Wanderers", "Sunda Raya", "Andalas FC", 
             "Java Warriors", "Merdeka Rovers", "Nusantara FC"
         ];
+
+        function loginGoogle() {
+            // Simulasi Login Google (Nanti bisa dihubungkan ke Firebase Auth asli secara gratis)
+            let dummyEmail = prompt("Simulasi Login Google: Masukkan alamat email Google kamu:", "manager.sepakbola@gmail.com");
+            
+            if(dummyEmail && dummyEmail.includes("@")) {
+                saveData.email = dummyEmail;
+                document.getElementById("google-email").value = saveData.email;
+                document.getElementById("setup-form").style.display = "block";
+                alert("Berhasil menautkan akun Google: " + saveData.email);
+            } else {
+                alert("Email tidak valid atau login dibatalkan.");
+            }
+        }
 
         function mulaiKarier() {
             let m = document.getElementById("manager-name").value;
@@ -118,11 +161,12 @@
             saveData.club = c;
 
             document.getElementById("display-manager").innerText = saveData.manager;
+            document.getElementById("display-email").innerText = saveData.email;
             document.getElementById("display-club").innerText = "Klub: " + saveData.club;
             document.getElementById("display-token").innerText = saveData.token;
 
-            // Sembunyikan layar setup, tampilkan layar utama game
-            document.getElementById("setup-screen").style.display = "none";
+            // Pindah layar ke game utama
+            document.getElementById("login-screen").style.display = "none";
             document.getElementById("game-screen").style.display = "block";
 
             generateRivals();
@@ -131,7 +175,6 @@
         function generateRivals() {
             let listEl = document.getElementById("rival-list");
             listEl.innerHTML = "";
-            // Ambil 4 rival acak
             let acak = namaRivalRandom.sort(() => 0.5 - Math.random()).slice(0, 4);
             acak.forEach(rival => {
                 let li = document.createElement("li");
@@ -147,7 +190,7 @@
         }
 
         function mainkanKompetisi(namaKompetisi) {
-            alert("Kamu mendaftarkan " + saveData.club + " ke ajang " + namaKompetisi + "! Pertandingan akan segera disimulasikan.");
+            alert("Kamu mendaftarkan " + saveData.club + " ke ajang " + namaKompetisi + "! Pertandingan akan disimulasikan.");
         }
     </script>
 
